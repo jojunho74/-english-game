@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>📚 영어 구문 블럭 게임</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800;900&family=Noto+Sans+KR:wght@700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  font-family: 'Baloo 2', 'Noto Sans KR', sans-serif;
+  background: #F0F7FF; min-height: 100vh;
+  color: #1A1A2E; overflow-x: hidden;
+}
+:root {
+  --primary: #4F7EF7; --primary-dk: #2D5BE3;
+  --green: #06D6A0;   --green-dk: #04A87D;
+  --red: #FF6B9D;     --red-dk: #D94E7F;
+  --yellow: #FFD166;  --yellow-dk: #E5A800;
+  --purple: #9B5DE5;  --orange: #FF9F1C;
+  --border: #E2E8F0;  --card: #fff;
+  --text-sub: #888;   --radius: 14px;
+  --shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+/* WELCOME */
+#welcomeModal {
+  position: fixed; inset: 0; z-index: 2000;
+  background: linear-gradient(135deg,#4F7EF7,#9B5DE5);
+  display: flex; align-items: center; justify-content: center;
+}
+.w-box {
+  background:#fff; border-radius:24px; padding:36px 32px;
+  max-width:400px; width:92%; text-align:center;
+  box-shadow:0 24px 60px rgba(0,0,0,.25);
+  animation:popIn .5s cubic-bezier(.68,-.55,.265,1.55);
+}
+.w-emoji { font-size:56px; display:block; animation:wob 1.2s infinite; margin-bottom:10px; }
+.w-title { font-size:22px; font-weight:900; color:var(--primary); margin-bottom:6px; }
+.w-sub   { font-size:13px; color:var(--text-sub); margin-bottom:18px; line-height:1.7; }
+.w-label { font-size:13px; font-weight:800; color:var(--text-sub); margin-bottom:7px; }
+.w-input {
+  width:100%; padding:12px 16px; border:3px solid var(--border);
+  border-radius:12px; font-size:18px; font-weight:900;
+  font-family:inherit; text-align:center; outline:none; margin-bottom:16px;
+  transition:border-color .2s;
+}
+.w-input:focus { border-color:var(--primary); }
+.w-btn {
+  background:linear-gradient(135deg,var(--primary),var(--purple));
+  color:#fff; border:none; padding:14px 40px;
+  border-radius:50px; font-size:18px; font-weight:900;
+  cursor:pointer; font-family:inherit;
+  box-shadow:0 5px 0 var(--primary-dk); animation:pulse 1.5s infinite;
+}
+
+/* SUCCESS MODAL */
+.modal-bg {
+  position:fixed; inset:0; background:rgba(0,0,0,.55);
+  z-index:999; display:none; align-items:center; justify-content:center;
+}
+.modal-bg.show { display:flex; }
+.modal-box {
+  background:#fff; border-radius:24px; padding:36px 30px;
+  text-align:center; max-width:380px; width:92%;
+  animation:popIn .45s cubic-bezier(.68,-.55,.265,1.55);
+}
+.modal-char  { font-size:72px; display:block; animation:celeb .6s infinite alternate; }
+.modal-title { font-size:24px; font-weight:900; color:var(--purple); margin:8px 0; }
+.modal-sub   { font-size:14px; color:var(--text-sub); margin-bottom:20px; line-height:1.8; white-space:pre-line; }
+
+/* TOP BAR */
+.top-bar {
+  background:#fff; border-bottom:2px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 12px; position:sticky; top:0; z-index:100;
+  box-shadow:0 2px 8px rgba(0,0,0,.06); height:50px;
+}
+.top-logo { font-size:16px; font-weight:900; color:var(--primary); }
+.top-child { font-size:13px; font-weight:800; color:var(--text-sub); display:none; }
+.top-child span { color:var(--primary); }
+.top-edit-btn { background:none; border:none; font-size:13px; font-weight:800; color:var(--text-sub); cursor:pointer; font-family:inherit; padding:4px 8px; }
+
+/* TAB */
+.tab-nav {
+  background:#fff; border-bottom:2px solid var(--border);
+  display:flex; justify-content:center;
+  box-shadow:0 1px 6px rgba(0,0,0,.04);
+}
+.tab-btn {
+  flex:1; max-width:160px; padding:12px 6px;
+  font-size:13px; font-weight:800; background:none; border:none;
+  cursor:pointer; color:var(--text-sub); font-family:inherit;
+  border-bottom:3px solid transparent; margin-bottom:-2px;
+  transition:all .2s; white-space:nowrap;
+}
+.tab-btn.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+.page { display:none; }
+.page.active { display:block; }
+.container { max-width:720px; margin:0 auto; padding:14px 12px; }
+
+/* CARD */
+.card {
+  background:var(--card); border-radius:var(--radius);
+  border:2px solid var(--border); box-shadow:var(--shadow);
+  margin-bottom:12px; overflow:hidden;
+}
+.card-head {
+  padding:10px 14px; font-size:13px; font-weight:900;
+  color:var(--text-sub); border-bottom:2px solid var(--border);
+  display:flex; align-items:center; gap:6px; background:#FAFBFF;
+}
+.card-body { padding:12px 14px; }
+
+/* BUTTONS */
+.btn {
+  padding:9px 20px; border-radius:50px; border:none;
+  font-size:13px; font-weight:900; cursor:pointer;
+  font-family:inherit; transition:all .15s; white-space:nowrap;
+}
+.btn-sm { padding:7px 14px; font-size:12px; }
+.btn-blue   { background:var(--primary); color:#fff; box-shadow:0 4px 0 var(--primary-dk); }
+.btn-blue:hover { transform:translateY(-1px); }
+.btn-blue:active { transform:translateY(3px); box-shadow:0 1px 0 var(--primary-dk); }
+.btn-green  { background:var(--green); color:#fff; box-shadow:0 4px 0 var(--green-dk); }
+.btn-green:hover { transform:translateY(-1px); }
+.btn-yellow { background:var(--yellow); color:#7A5000; box-shadow:0 4px 0 var(--yellow-dk); }
+.btn-yellow:hover { transform:translateY(-1px); }
+.btn-red    { background:var(--red); color:#fff; box-shadow:0 4px 0 var(--red-dk); }
+.btn-red:hover { transform:translateY(-1px); }
+.btn-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; padding:10px 0 4px; }
+
+/* CAT PILLS */
+.cat-row { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+.cat-pill {
+  padding:5px 12px; border-radius:20px; border:2px solid var(--border);
+  font-size:12px; font-weight:800; cursor:pointer; font-family:inherit;
+  background:#fff; color:var(--text-sub); transition:all .15s;
+}
+.cat-pill.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+/* STATS */
+.stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:12px; }
+@media(min-width:480px) { .stats-grid { grid-template-columns:repeat(4,1fr); } }
+.stat-card { background:#fff; border-radius:12px; padding:14px 10px; text-align:center; border:2px solid var(--border); }
+.stat-num  { font-size:30px; font-weight:900; }
+.stat-lbl  { font-size:11px; font-weight:800; color:var(--text-sub); margin-top:2px; }
+.rank-list { display:flex; flex-direction:column; gap:7px; }
+.rank-row  { background:#fff; border-radius:11px; padding:10px 14px; border:2px solid var(--border); display:flex; align-items:center; gap:10px; }
+.rank-badge { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; flex-shrink:0; }
+.r1{background:#FFD700;color:#7A5000} .r2{background:#C0C0C0;color:#444} .r3{background:#CD7F32;color:#fff} .rN{background:var(--border);color:var(--text-sub)}
+.rank-word { flex:1; }
+.rank-en { font-size:13px; font-weight:900; color:var(--primary); }
+.rank-ko { font-size:11px; font-weight:700; color:var(--text-sub); }
+.rank-cnt { background:rgba(6,214,160,.12); color:var(--green-dk); border-radius:20px; padding:3px 10px; font-size:13px; font-weight:900; }
+
+/* PHRASE LIST */
+.phrase-item {
+  background:#fff; border-radius:12px; padding:13px 15px;
+  border:2px solid var(--border); cursor:pointer; transition:all .2s;
+  display:flex; align-items:flex-start; gap:10px;
+}
+.phrase-item:hover { border-color:var(--primary); transform:translateY(-1px); box-shadow:0 4px 12px rgba(79,126,247,.12); }
+.phrase-num { font-size:11px; font-weight:900; color:#aaa; min-width:24px; padding-top:2px; }
+.phrase-en  { font-size:15px; font-weight:900; color:var(--primary); margin-bottom:3px; }
+.phrase-ko  { font-size:13px; font-weight:700; color:var(--text-sub); }
+.phrase-tag { font-size:10px; font-weight:800; padding:2px 8px; border-radius:12px; background:#EFF6FF; color:#1E40AF; margin-top:5px; display:inline-block; }
+
+/* GAME */
+.score-row { display:flex; justify-content:center; gap:24px; margin-bottom:10px; text-align:center; }
+.score-item { font-size:11px; font-weight:800; color:var(--text-sub); }
+.score-num  { font-size:24px; font-weight:900; display:block; }
+.prog-bar { background:#EEE; border-radius:30px; height:10px; overflow:hidden; margin-bottom:3px; }
+.prog-fill { height:100%; background:linear-gradient(90deg,var(--green),var(--primary)); border-radius:30px; transition:width .4s; }
+.prog-text { text-align:center; font-size:12px; font-weight:800; color:var(--text-sub); }
+
+/* KO DISPLAY */
+#curPhraseKo {
+  font-size:18px; font-weight:900; color:var(--primary);
+  text-align:center; padding:10px 0 4px; min-height:30px; line-height:1.4;
+}
+
+/* CHUNK BLOCKS */
+#wordBankArea {
+  display:flex; flex-wrap:wrap; gap:10px;
+  justify-content:center; align-items:center; min-height:70px; padding:8px 0;
+}
+.chunk-block {
+  padding:12px 20px; border-radius:14px;
+  font-size:18px; font-weight:900; color:#fff;
+  cursor:grab; user-select:none;
+  touch-action:none;
+  box-shadow:0 5px 0 rgba(0,0,0,0.20); transition:all .15s;
+  text-align:center; line-height:1.3;
+  background: var(--primary);
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+}
+.chunk-en { font-size:18px; font-weight:900; line-height:1.2; }
+.chunk-ko { font-size:12px; font-weight:700; opacity:.88; line-height:1; }
+.chunk-block:hover { transform:translateY(-3px) scale(1.04); }
+.chunk-block:active { cursor:grabbing; }
+.chunk-block.dragging { opacity:.3; transform:scale(.88); }
+.chunk-block.placed   { opacity:.18; pointer-events:none; }
+
+/* chunk 색상 - 순서별 */
+.chunk-block.cc-0 { background:#4F7EF7; box-shadow:0 5px 0 #2D5BE3; }
+.chunk-block.cc-1 { background:#FF6B9D; box-shadow:0 5px 0 #D94E7F; }
+.chunk-block.cc-2 { background:#06D6A0; box-shadow:0 5px 0 #04A87D; }
+.chunk-block.cc-3 { background:#FF9F1C; box-shadow:0 5px 0 #C97500; }
+.chunk-block.cc-4 { background:#9B5DE5; box-shadow:0 5px 0 #7340C0; }
+
+/* DROP ZONE */
+#dropZoneArea {
+  display:flex; flex-wrap:wrap; gap:10px;
+  min-height:80px; padding:12px;
+  justify-content:center; align-items:center;
+  border:3px dashed var(--border); border-radius:14px;
+  background:#FAFAFA; transition:all .2s;
+}
+#dropZoneArea.drag-over { border-color:var(--green); background:rgba(6,214,160,.06); }
+
+.drop-slot {
+  min-width:100px; min-height:60px; border:2px dashed #CCC;
+  border-radius:12px; display:flex; align-items:center; justify-content:center;
+  font-size:16px; color:#CCC; font-weight:800; transition:all .2s; background:#fff;
+  padding:8px 10px; text-align:center;
+}
+.drop-slot.correct { border-style:solid; }
+.drop-slot.wrong   { animation:shake .4s ease; border-color:var(--red); }
+.drop-slot.drag-over-slot { border-color:var(--green); background:rgba(6,214,160,.08); transform:scale(1.04); }
+
+.placed-chunk {
+  padding:10px 16px; border-radius:11px;
+  font-size:17px; font-weight:900; color:#fff;
+  box-shadow:0 3px 0 rgba(0,0,0,.15); text-align:center; width:100%;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+}
+.placed-chunk .chunk-en { font-size:16px; }
+.placed-chunk .chunk-ko { font-size:11px; opacity:.88; }
+.placed-chunk.cc-0 { background:#4F7EF7; }
+.placed-chunk.cc-1 { background:#FF6B9D; }
+.placed-chunk.cc-2 { background:#06D6A0; }
+.placed-chunk.cc-3 { background:#FF9F1C; }
+.placed-chunk.cc-4 { background:#9B5DE5; }
+
+/* HINT BOX */
+.hint-box {
+  background:#FFFBEB; border:2px solid var(--yellow);
+  border-radius:10px; padding:8px 12px;
+  font-size:13px; font-weight:700; color:#7A5000;
+  margin-top:8px; display:none;
+}
+
+/* KO TRANSLATION */
+#koTranslation {
+  display:none; margin-top:12px;
+  background:linear-gradient(135deg,#EFF6FF,#F0FDF4);
+  border:2px solid #BFDBFE; border-radius:12px;
+  padding:14px; text-align:center;
+}
+#koTranslationText {
+  font-size:20px; font-weight:900; color:#1E40AF; line-height:1.5;
+}
+
+/* PARTICLES */
+.particle { position:fixed; pointer-events:none; z-index:998; animation:pfly 2s ease-out forwards; }
+.wrong-msg {
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  background:var(--red); color:#fff; padding:10px 24px;
+  border-radius:40px; font-size:14px; font-weight:900;
+  z-index:500; animation:slideU 2.5s ease forwards; white-space:nowrap;
+}
+
+/* ANIMATIONS */
+@keyframes popIn  { from{opacity:0;transform:scale(.3)} to{opacity:1;transform:scale(1)} }
+@keyframes wob    { 0%,100%{transform:rotate(-6deg)} 50%{transform:rotate(6deg)} }
+@keyframes pulse  { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+@keyframes shake  { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
+@keyframes celeb  { from{transform:scale(1) rotate(-5deg)} to{transform:scale(1.12) rotate(5deg)} }
+@keyframes pfly   { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-250px) scale(0) rotate(720deg)} }
+@keyframes slideU { 0%{opacity:0;bottom:8px} 15%{opacity:1;bottom:20px} 70%{opacity:1} 100%{opacity:0;bottom:40px} }
+@keyframes cPop   { 0%{transform:scale(1)} 50%{transform:scale(1.18)} 100%{transform:scale(1)} }
+.c-pop { animation:cPop .3s ease; }
+
+/* WORD COUNT badge */
+.word-count { background:var(--primary); color:#fff; border-radius:20px; padding:3px 12px; font-size:12px; font-weight:900; }
+
+/* ===== LIVE RANK BOARD ===== */
+.rank-live-row {
+  display:flex; align-items:center; gap:7px;
+  padding:5px 8px; border-radius:10px; margin-bottom:4px;
+  background:#fff; border:1.5px solid var(--border);
+  transition: all 0.5s cubic-bezier(.34,1.56,.64,1);
+  position:relative;
+}
+.rank-live-row.is-me {
+  background:linear-gradient(135deg,#EFF6FF,#F0FDF4);
+  border-color:var(--primary); box-shadow:0 2px 8px rgba(79,126,247,.18);
+}
+.rank-live-row.move-up   { animation: rowUp 0.6s ease; }
+.rank-live-row.move-down { animation: rowDown 0.6s ease; }
+
+.rank-pos {
+  width:24px; height:24px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:900; flex-shrink:0;
+}
+.rank-pos.p1{background:#FFD700;color:#7A5000}
+.rank-pos.p2{background:#C0C0C0;color:#444}
+.rank-pos.p3{background:#CD7F32;color:#fff}
+.rank-pos.pN{background:#EEE;color:#888}
+.rank-pos.pMe{background:var(--primary);color:#fff;box-shadow:0 2px 0 var(--primary-dk)}
+
+.rank-avatar {
+  width:26px; height:26px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px;
+}
+.rank-info { flex:1; min-width:0; }
+.rank-name { font-size:12px; font-weight:900; color:#1A1A2E; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rank-score-bar-wrap { display:flex; align-items:center; gap:4px; margin-top:2px; }
+.rank-bar-bg { flex:1; height:4px; background:#EEE; border-radius:10px; overflow:hidden; }
+.rank-bar-fill { height:100%; border-radius:10px; transition:width 0.6s ease; }
+.rank-score-num { font-size:10px; font-weight:900; color:var(--text-sub); min-width:26px; text-align:right; }
+
+.rank-delta {
+  font-size:11px; font-weight:900; width:26px; text-align:center; flex-shrink:0;
+}
+.rank-delta.up   { color:var(--green-dk); }
+.rank-delta.down { color:var(--red-dk); }
+.rank-delta.same { color:#bbb; }
+
+.rank-crown { font-size:14px; position:absolute; top:-6px; left:50%; transform:translateX(-50%); display:none; }
+.rank-live-row.is-me .rank-crown { display:block; }
+
+/* 순위 변동 히스토리 바 */
+.rh-bar {
+  flex:1; border-radius:4px 4px 0 0; min-width:18px;
+  background:var(--primary); transition:height 0.4s ease;
+  position:relative;
+}
+.rh-bar.best { background:var(--green); }
+.rh-bar.worst { background:var(--red); }
+.rh-bar-label { position:absolute; bottom:-18px; left:50%; transform:translateX(-50%); font-size:10px; font-weight:800; color:var(--text-sub); white-space:nowrap; }
+
+@keyframes rowUp   { 0%{transform:translateY(8px);background:#D1FAE5} 100%{transform:translateY(0);background:inherit} }
+@keyframes rowDown { 0%{transform:translateY(-8px);background:#FFE4E6} 100%{transform:translateY(0);background:inherit} }
+@keyframes rankPop { 0%{transform:scale(1)} 50%{transform:scale(1.15)} 100%{transform:scale(1)} }
+
+/* 순위 상승 토스트 */
+.rank-toast {
+  position:fixed; top:70px; left:50%; transform:translateX(-50%);
+  background:linear-gradient(135deg,var(--green),#00B4D8);
+  color:#fff; padding:10px 22px; border-radius:40px;
+  font-size:15px; font-weight:900; z-index:600;
+  box-shadow:0 6px 20px rgba(6,214,160,.4);
+  animation:toastIn 2.8s ease forwards;
+  white-space:nowrap;
+}
+@keyframes toastIn { 0%{opacity:0;top:60px} 15%{opacity:1;top:70px} 75%{opacity:1} 100%{opacity:0;top:55px} }
+</style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<div id="welcomeModal">
+  <div class="w-box">
+    <span class="w-emoji">📚</span>
+    <div class="w-title">영어 구문 블럭 게임</div>
+    <div class="w-sub">초6 필수 구문 100개를<br>블럭으로 맞추며 익혀요! ✨</div>
+    <div class="w-label">👤 이름을 입력해주세요</div>
+    <input class="w-input" id="childNameInput" placeholder="예: 민준, 지아..." maxlength="10"
+           onkeydown="if(event.key==='Enter') startGame()">
+    <br>
+    <button class="w-btn" onclick="startGame()">시작! 🚀</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="modal-bg" id="successModal">
+  <div class="modal-box">
+    <span class="modal-char" id="sChar">🌟</span>
+    <div class="modal-title" id="sTitle">완벽해요!</div>
+    <div class="modal-sub" id="sSub"></div>
+    <div class="btn-row">
+      <button class="btn btn-blue" onclick="nextGame()">다음 문장 ➡️</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="top-logo">🌈 영어 구문 블럭</div>
+  <div class="top-child" id="topChild">
+    👤 <span id="topChildName"></span>
+    <button class="top-edit-btn" onclick="changeName()">✏️</button>
+  </div>
+</div>
+
+<!-- TAB NAV -->
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('phrases')"  id="tab-phrases">📖 구문집</button>
+  <button class="tab-btn"        onclick="showTab('stats')"    id="tab-stats">📊 현황</button>
+  <button class="tab-btn"        onclick="showTab('game')"     id="tab-game">🎮 게임</button>
+</nav>
+
+<!-- ===== PHRASES PAGE ===== -->
+<div class="page active" id="page-phrases">
+  <div class="container">
+    <div class="card">
+      <div class="card-head">
+        📖 구문집
+        <span class="word-count" id="phraseCnt">100개</span>
+      </div>
+      <div class="card-body">
+        <div class="cat-row" id="phraseFilter">
+          <button class="cat-pill active" onclick="filterPhrase(this,'all')">전체</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'be')">🟢 be동사</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'present')">🟢 현재형</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'past')">🟡 과거형</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'future')">🟠 미래형</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'question')">🔴 의문문</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'modal')">🟣 조동사</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'compare')">🔵 비교급</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'conj')">🟢 접속사</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'prep')">🟡 전치사</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'feeling')">🔴 감정표현</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'advanced')">⭐ 고급전체</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'adv_to')">📌 to부정사</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'adv_ger')">📌 동명사</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'adv_part')">📌 분사</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'adv_rel')">📌 관계사</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'adv_cond')">📌 가정법</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'adv_pass')">📌 수동태</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'adv_comp')">📌 비교구문</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'adv_emph')">📌 강조/도치</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'adv_noun')">📌 명사절</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'adv_conj')">📌 접속사</button>
+          <button class="cat-pill" onclick="filterPhrase(this,'adv_essay')">📌 논술구문</button>
+        </div>
+        <div id="phraseList" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== STATS PAGE ===== -->
+<div class="page" id="page-stats">
+  <div class="container">
+    <div class="card">
+      <div class="card-head">📊 <span id="statsName">학습자</span>의 학습 현황</div>
+      <div class="card-body">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-num" style="color:var(--primary)" id="st1">200</div><div class="stat-lbl">📚 전체 구문</div></div>
+          <div class="stat-card"><div class="stat-num" style="color:var(--green)"   id="st2">0</div><div class="stat-lbl">✅ 완성 구문</div></div>
+          <div class="stat-card"><div class="stat-num" style="color:var(--orange)"  id="st3">0</div><div class="stat-lbl">🎮 게임 횟수</div></div>
+          <div class="stat-card"><div class="stat-num" style="color:var(--purple)"  id="st4">0</div><div class="stat-lbl">🎯 맞힌 블럭</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">🏆 많이 연습한 구문 TOP 10</div>
+      <div class="card-body">
+        <div class="rank-list" id="rankList">
+          <div style="text-align:center;padding:20px;color:var(--text-sub);font-size:13px;font-weight:700">게임을 시작해보세요! 🎮</div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-red btn-sm" onclick="if(confirm('학습 기록을 초기화할까요?')) resetStats()">🗑️ 기록 초기화</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GAME PAGE ===== -->
+<div class="page" id="page-game">
+  <div class="container">
+
+    <!-- 🤖 NPC 연습 랭킹 (항상 표시) -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-head" style="justify-content:space-between;padding:8px 12px">
+        <span>🤖 NPC 연습 랭킹</span>
+        <span style="font-size:10px;font-weight:800;color:#aaa;background:#F3F4F6;border-radius:8px;padding:2px 7px">가상 경쟁</span>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:#9CA3AF;padding:0 10px 6px;line-height:1.5">
+        💡 실제 다른 사용자가 아닌 가상 NPC와의 연습 랭킹입니다
+      </div>
+      <div class="card-body" style="padding:6px 8px">
+        <div id="liveRankBoard"></div>
+        <!-- 순위 히스토리 바 -->
+        <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px;display:flex;align-items:center;gap:8px">
+          <div style="font-size:11px;font-weight:800;color:var(--text-sub);white-space:nowrap">내 순위</div>
+          <div id="rankHistoryChart" style="display:flex;align-items:flex-end;gap:3px;height:36px;flex:1"></div>
+          <div style="font-size:11px;font-weight:900;color:var(--primary)" id="rankHistoryLabel">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 카테고리 선택 -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-body" style="padding:10px 12px">
+        <div class="cat-row" id="gameCatFilter" style="margin-bottom:0">
+          <button class="cat-pill active" onclick="selectGameCat(this,'all')">🎲 전체</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'be')">🟢 be동사</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'present')">🟢 현재형</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'past')">🟡 과거형</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'future')">🟠 미래형</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'question')">🔴 의문문</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'modal')">🟣 조동사</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'compare')">🔵 비교급</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'conj')">🟢 접속사</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'prep')">🟡 전치사</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'feeling')">🔴 감정표현</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'advanced')">⭐ 고급전체</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'adv_to')">📌 to부정사</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'adv_ger')">📌 동명사</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'adv_part')">📌 분사</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'adv_rel')">📌 관계사</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'adv_cond')">📌 가정법</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'adv_pass')">📌 수동태</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'adv_comp')">📌 비교구문</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'adv_emph')">📌 강조/도치</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'adv_noun')">📌 명사절</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'adv_conj')">📌 접속사</button>
+          <button class="cat-pill" onclick="selectGameCat(this,'adv_essay')">📌 논술구문</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCORE -->
+    <div class="score-row">
+      <div class="score-item"><span class="score-num" style="color:var(--green)"   id="scOk">0</span>✅ 맞힘</div>
+      <div class="score-item"><span class="score-num" style="color:var(--primary)" id="scSn">0</span>📝 문장</div>
+      <div class="score-item"><span class="score-num" style="color:var(--red)"     id="scNg">0</span>❌ 틀림</div>
+    </div>
+
+    <!-- 현재 구문 한글 -->
+    <div class="card">
+      <div class="card-head">
+        🇰🇷 한글 뜻 <span id="phraseNumBadge" style="font-size:11px;font-weight:700;color:#aaa;margin-left:4px"></span>
+        <div style="margin-left:auto">
+          <div class="prog-bar" style="width:120px;margin-bottom:0"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="card-body" style="padding:10px 14px">
+        <div id="curPhraseKo">🎲 새 문장 버튼을 눌러주세요</div>
+        <div class="prog-text" id="progText" style="margin-top:4px"></div>
+      </div>
+    </div>
+
+    <!-- CHUNK BANK -->
+    <div class="card" id="wbCard">
+      <div class="card-head">🎯 청크 블럭을 순서대로 놓으세요!</div>
+      <div class="card-body">
+        <div id="wordBankArea">
+          <span style="color:#CCC;font-size:13px;font-weight:700">새 문장을 눌러주세요</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DROP ZONE -->
+    <div class="card">
+      <div class="card-head">🏁 여기에 순서대로!</div>
+      <div class="card-body" style="padding:8px">
+        <div id="dropZoneArea">
+          <div style="color:#CCC;font-size:13px;font-weight:700">블럭을 드래그 ⬇️</div>
+        </div>
+        <div id="koTranslation">
+          <div style="font-size:11px;font-weight:900;color:#6B7280;margin-bottom:8px">🎉 완성! 정답 확인</div>
+          <div id="koTranslationText"></div>
+        </div>
+        <div class="hint-box" id="hintBox" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="btn-row">
+      <button class="btn btn-yellow btn-sm" onclick="showHint()">💡 힌트</button>
+      <button class="btn btn-red    btn-sm" onclick="resetDZ()">🔄 다시하기</button>
+      <button class="btn btn-blue"          onclick="loadSentence()">🎲 새 문장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PHRASES = [
+  // ===== BE동사 현재 (1~10) =====
+  { id:1,  cat:'be',      en:`I am a student at an elementary school.`,        ko:`나는 초등학교 학생이다.`,                    chunks:['I','am','a','student','at','an','elementary','school.'] },
+  { id:2,  cat:'be',      en:`She is very kind and helpful.`,                  ko:`그녀는 매우 친절하고 도움이 된다.`,          chunks:['She','is','very','kind','and','helpful.'] },
+  { id:3,  cat:'be',      en:`They are my very best friends.`,                  ko:`그들은 나의 가장 친한 친구들이다.`,          chunks:['They','are','my','very','best','friends.'] },
+  { id:4,  cat:'be',      en:`The sky is clear and blue today.`,               ko:`오늘 하늘은 맑고 파랗다.`,                   chunks:['The','sky','is','clear','and','blue','today.'] },
+  { id:5,  cat:'be',      en:`We are ready for the test.`,                     ko:`우리는 시험 준비가 되어 있다.`,              chunks:['We','are','ready','for','the','test.'] },
+  { id:6,  cat:'be',      en:`He is tall and has short hair.`,                 ko:`그는 키가 크고 머리카락이 짧다.`,            chunks:['He','is','tall','and','has','short','hair.'] },
+  { id:7,  cat:'be',      en:`My dog is very playful and cute.`,               ko:`나의 개는 매우 장난스럽고 귀엽다.`,          chunks:['My','dog','is','very','playful','and','cute.'] },
+  { id:8,  cat:'be',      en:`The classroom is clean and quiet.`,              ko:`교실은 깨끗하고 조용하다.`,                  chunks:['The','classroom','is','clean','and','quiet.'] },
+  { id:9,  cat:'be',      en:`I am happy to see you again.`,                   ko:`나는 너를 다시 만나서 행복하다.`,            chunks:['I','am','happy','to','see','you','again.'] },
+  { id:10, cat:'be',      en:`Math is my most favorite subject.`,               ko:`수학은 내가 가장 좋아하는 과목이다.`,        chunks:['Math','is','my','most','favorite','subject.'] },
+
+  // ===== 일반동사 현재 (11~20) =====
+  { id:11, cat:'present', en:`I go to school by bus every day.`,               ko:`나는 매일 버스를 타고 학교에 간다.`,         chunks:['I','go','to','school','by','bus','every','day.'] },
+  { id:12, cat:'present', en:`She reads books in her free time.`,              ko:`그녀는 여가 시간에 책을 읽는다.`,            chunks:['She','reads','books','in','her','free','time.'] },
+  { id:13, cat:'present', en:`He plays soccer after school every day.`,         ko:`그는 방과 후에 매일 축구를 한다.`,           chunks:['He','plays','soccer','after','school','every','day.'] },
+  { id:14, cat:'present', en:`We always eat lunch at noon.`,                    ko:`우리는 항상 정오에 점심을 먹는다.`,          chunks:['We','always','eat','lunch','at','noon.'] },
+  { id:15, cat:'present', en:`My mom cooks delicious food every day.`,         ko:`나의 엄마는 매일 맛있는 음식을 요리한다.`,   chunks:['My','mom','cooks','delicious','food','every','day.'] },
+  { id:16, cat:'present', en:`They always study English together at school.`,   ko:`그들은 항상 학교에서 함께 영어를 공부한다.`, chunks:['They','always','study','English','together','at','school.'] },
+  { id:17, cat:'present', en:`I wake up at seven in the morning.`,             ko:`나는 아침 7시에 일어난다.`,                  chunks:['I','wake','up','at','seven','in','the','morning.'] },
+  { id:18, cat:'present', en:`She really likes to draw pictures.`,              ko:`그녀는 그림 그리는 것을 정말 좋아한다.`,    chunks:['She','really','likes','to','draw','pictures.'] },
+  { id:19, cat:'present', en:`He drinks a glass of milk every morning.`,       ko:`그는 매일 아침 우유 한 잔을 마신다.`,        chunks:['He','drinks','a','glass','of','milk','every','morning.'] },
+  { id:20, cat:'present', en:`We clean our classroom on Fridays.`,             ko:`우리는 금요일마다 교실을 청소한다.`,         chunks:['We','clean','our','classroom','on','Fridays.'] },
+
+  // ===== 과거시제 (21~30) =====
+  { id:21, cat:'past',    en:`I visited my grandparents last weekend.`,        ko:`나는 지난 주말에 조부모님을 방문했다.`,      chunks:['I','visited','my','grandparents','last','weekend.'] },
+  { id:22, cat:'past',    en:`She watched a good movie yesterday.`,             ko:`그녀는 어제 좋은 영화를 봤다.`,             chunks:['She','watched','a','good','movie','yesterday.'] },
+  { id:23, cat:'past',    en:`We played games at the park.`,                   ko:`우리는 공원에서 게임을 했다.`,               chunks:['We','played','games','at','the','park.'] },
+  { id:24, cat:'past',    en:`He finished his homework before dinner.`,        ko:`그는 저녁 식사 전에 숙제를 끝냈다.`,         chunks:['He','finished','his','homework','before','dinner.'] },
+  { id:25, cat:'past',    en:`It rained a lot last night.`,                    ko:`어젯밤에 비가 많이 왔다.`,                   chunks:['It','rained','a','lot','last','night.'] },
+  { id:26, cat:'past',    en:`I ate pizza for lunch yesterday.`,               ko:`나는 어제 점심으로 피자를 먹었다.`,          chunks:['I','ate','pizza','for','lunch','yesterday.'] },
+  { id:27, cat:'past',    en:`They went on a field trip last Monday.`,         ko:`그들은 지난 월요일에 현장 학습을 갔다.`,     chunks:['They','went','on','a','field','trip','last','Monday.'] },
+  { id:28, cat:'past',    en:`She wrote a letter to her friend.`,              ko:`그녀는 친구에게 편지를 썼다.`,               chunks:['She','wrote','a','letter','to','her','friend.'] },
+  { id:29, cat:'past',    en:`I saw a rainbow after the rain.`,                ko:`나는 비가 온 후에 무지개를 봤다.`,           chunks:['I','saw','a','rainbow','after','the','rain.'] },
+  { id:30, cat:'past',    en:`He ran fast and won the race.`,                  ko:`그는 빠르게 달려서 경주에서 이겼다.`,        chunks:['He','ran','fast','and','won','the','race.'] },
+
+  // ===== 미래시제 (31~40) =====
+  { id:31, cat:'future',  en:`I will study hard for the exam.`,                ko:`나는 시험을 위해 열심히 공부할 것이다.`,     chunks:['I','will','study','hard','for','the','exam.'] },
+  { id:32, cat:'future',  en:`She is going to visit Seoul next week.`,         ko:`그녀는 다음 주에 서울을 방문할 예정이다.`,   chunks:['She','is','going','to','visit','Seoul','next','week.'] },
+  { id:33, cat:'future',  en:`We will have a school festival soon.`,           ko:`우리는 곧 학교 축제를 열 것이다.`,           chunks:['We','will','have','a','school','festival','soon.'] },
+  { id:34, cat:'future',  en:`He is going to learn how to swim.`,              ko:`그는 수영하는 법을 배울 예정이다.`,          chunks:['He','is','going','to','learn','how','to','swim.'] },
+  { id:35, cat:'future',  en:`It will be very sunny tomorrow.`,                 ko:`내일은 매우 맑을 것이다.`,                   chunks:['It','will','be','very','sunny','tomorrow.'] },
+  { id:36, cat:'future',  en:`I am going to read three books this month.`,     ko:`나는 이번 달에 책 세 권을 읽을 예정이다.`,   chunks:['I','am','going','to','read','three','books','this','month.'] },
+  { id:37, cat:'future',  en:`They will play basketball after school.`,        ko:`그들은 방과 후에 농구를 할 것이다.`,         chunks:['They','will','play','basketball','after','school.'] },
+  { id:38, cat:'future',  en:`She will make a birthday cake for him.`,         ko:`그녀는 그를 위해 생일 케이크를 만들 것이다.`,chunks:['She','will','make','a','birthday','cake','for','him.'] },
+  { id:39, cat:'future',  en:`We are going to plant trees this spring.`,       ko:`우리는 이번 봄에 나무를 심을 예정이다.`,     chunks:['We','are','going','to','plant','trees','this','spring.'] },
+  { id:40, cat:'future',  en:`He will become a scientist someday.`,            ko:`그는 언젠가 과학자가 될 것이다.`,            chunks:['He','will','become','a','scientist','someday.'] },
+
+  // ===== 의문문 (41~50) =====
+  { id:41, cat:'question',en:`What do you want to be in the future?`,          ko:`너는 미래에 무엇이 되고 싶니?`,              chunks:['What','do','you','want','to','be','in','the','future?'] },
+  { id:42, cat:'question',en:`Where did you go last summer?`,                  ko:`너는 지난 여름에 어디에 갔니?`,              chunks:['Where','did','you','go','last','summer?'] },
+  { id:43, cat:'question',en:`How often do you usually exercise?`,              ko:`너는 보통 얼마나 자주 운동하니?`,            chunks:['How','often','do','you','usually','exercise?'] },
+  { id:44, cat:'question',en:`Why are you late for school?`,                   ko:`너는 왜 학교에 늦었니?`,                     chunks:['Why','are','you','late','for','school?'] },
+  { id:45, cat:'question',en:`Who is your most favorite teacher?`,              ko:`네가 가장 좋아하는 선생님은 누구니?`,        chunks:['Who','is','your','most','favorite','teacher?'] },
+  { id:46, cat:'question',en:`Can you help me with this problem?`,             ko:`이 문제를 도와줄 수 있니?`,                  chunks:['Can','you','help','me','with','this','problem?'] },
+  { id:47, cat:'question',en:`How long does it take to get there?`,            ko:`거기까지 얼마나 걸리니?`,                    chunks:['How','long','does','it','take','to','get','there?'] },
+  { id:48, cat:'question',en:`Do you have any brothers or sisters?`,           ko:`너는 형제나 자매가 있니?`,                   chunks:['Do','you','have','any','brothers','or','sisters?'] },
+  { id:49, cat:'question',en:`What time does the library open?`,               ko:`도서관은 몇 시에 열리니?`,                   chunks:['What','time','does','the','library','open?'] },
+  { id:50, cat:'question',en:`Have you ever been to Jeju Island?`,             ko:`제주도에 가본 적 있니?`,                     chunks:['Have','you','ever','been','to','Jeju','Island?'] },
+
+  // ===== 조동사 (51~60) =====
+  { id:51, cat:'modal',   en:`I can speak English and Korean.`,                ko:`나는 영어와 한국어를 할 수 있다.`,           chunks:['I','can','speak','English','and','Korean.'] },
+  { id:52, cat:'modal',   en:`You should brush your teeth twice a day.`,       ko:`너는 하루에 두 번 이를 닦아야 한다.`,        chunks:['You','should','brush','your','teeth','twice','a','day.'] },
+  { id:53, cat:'modal',   en:`We must follow the school rules.`,               ko:`우리는 학교 규칙을 따라야 한다.`,            chunks:['We','must','follow','the','school','rules.'] },
+  { id:54, cat:'modal',   en:`She can play the piano very well.`,              ko:`그녀는 피아노를 매우 잘 칠 수 있다.`,        chunks:['She','can','play','the','piano','very','well.'] },
+  { id:55, cat:'modal',   en:`You should eat more fresh vegetables.`,           ko:`너는 신선한 채소를 더 많이 먹어야 한다.`,   chunks:['You','should','eat','more','fresh','vegetables.'] },
+  { id:56, cat:'modal',   en:`He must finish the report by Friday.`,           ko:`그는 금요일까지 보고서를 끝내야 한다.`,      chunks:['He','must','finish','the','report','by','Friday.'] },
+  { id:57, cat:'modal',   en:`Can you swim in the ocean?`,                     ko:`너는 바다에서 수영할 수 있니?`,              chunks:['Can','you','swim','in','the','ocean?'] },
+  { id:58, cat:'modal',   en:`We should be kind to each other.`,               ko:`우리는 서로에게 친절해야 한다.`,             chunks:['We','should','be','kind','to','each','other.'] },
+  { id:59, cat:'modal',   en:`She must not talk during the test.`,             ko:`그녀는 시험 중에 말하면 안 된다.`,           chunks:['She','must','not','talk','during','the','test.'] },
+  { id:60, cat:'modal',   en:`I can run faster than my brother.`,              ko:`나는 내 남동생보다 더 빠르게 달릴 수 있다.`, chunks:['I','can','run','faster','than','my','brother.'] },
+
+  // ===== 비교급/최상급 (61~70) =====
+  { id:61, cat:'compare', en:`This book is more interesting than that one.`,   ko:`이 책은 저것보다 더 흥미롭다.`,              chunks:['This','book','is','more','interesting','than','that','one.'] },
+  { id:62, cat:'compare', en:`Summer is much hotter than spring.`,              ko:`여름은 봄보다 훨씬 더 덥다.`,               chunks:['Summer','is','much','hotter','than','spring.'] },
+  { id:63, cat:'compare', en:`She is the tallest student in our class.`,       ko:`그녀는 우리 반에서 가장 키가 큰 학생이다.`,  chunks:['She','is','the','tallest','student','in','our','class.'] },
+  { id:64, cat:'compare', en:`A cheetah runs faster than a horse.`,            ko:`치타는 말보다 더 빠르게 달린다.`,            chunks:['A','cheetah','runs','faster','than','a','horse.'] },
+  { id:65, cat:'compare', en:`This is the most beautiful park in the city.`,   ko:`이곳은 도시에서 가장 아름다운 공원이다.`,    chunks:['This','is','the','most','beautiful','park','in','the','city.'] },
+  { id:66, cat:'compare', en:`My bag is heavier than yours.`,                  ko:`내 가방이 네 것보다 더 무겁다.`,             chunks:['My','bag','is','heavier','than','yours.'] },
+  { id:67, cat:'compare', en:`He is the best player on the team.`,             ko:`그는 팀에서 가장 훌륭한 선수이다.`,          chunks:['He','is','the','best','player','on','the','team.'] },
+  { id:68, cat:'compare', en:`English is easier than I thought.`,              ko:`영어는 내가 생각했던 것보다 더 쉽다.`,       chunks:['English','is','easier','than','I','thought.'] },
+  { id:69, cat:'compare', en:`This movie is more exciting than the last one.`, ko:`이 영화는 지난 것보다 더 신나다.`,           chunks:['This','movie','is','more','exciting','than','the','last','one.'] },
+  { id:70, cat:'compare', en:`January is the coldest month of the year.`,      ko:`1월은 한 해 중 가장 추운 달이다.`,           chunks:['January','is','the','coldest','month','of','the','year.'] },
+
+  // ===== 접속사/복문 (71~80) =====
+  { id:71, cat:'conj',    en:`I like summer because I can go swimming.`,       ko:`나는 수영을 할 수 있어서 여름을 좋아한다.`,  chunks:['I','like','summer','because','I','can','go','swimming.'] },
+  { id:72, cat:'conj',    en:`She studied hard so she got a good grade.`,      ko:`그녀는 열심히 공부해서 좋은 성적을 받았다.`, chunks:['She','studied','hard','so','she','got','a','good','grade.'] },
+  { id:73, cat:'conj',    en:`Although it was cold we went outside.`,          ko:`추웠지만 우리는 밖에 나갔다.`,               chunks:['Although','it','was','cold','we','went','outside.'] },
+  { id:74, cat:'conj',    en:`If you practice every day you will improve.`,    ko:`매일 연습하면 실력이 늘 것이다.`,            chunks:['If','you','practice','every','day','you','will','improve.'] },
+  { id:75, cat:'conj',    en:`When I grow up I want to be a doctor.`,          ko:`내가 크면 의사가 되고 싶다.`,                chunks:['When','I','grow','up','I','want','to','be','a','doctor.'] },
+  { id:76, cat:'conj',    en:`He could not come because he was sick.`,         ko:`그는 아파서 올 수 없었다.`,                  chunks:['He','could','not','come','because','he','was','sick.'] },
+  { id:77, cat:'conj',    en:`I will help you if you ask me.`,                 ko:`네가 부탁하면 내가 도와줄게.`,               chunks:['I','will','help','you','if','you','ask','me.'] },
+  { id:78, cat:'conj',    en:`She is smart and also very creative.`,           ko:`그녀는 똑똑하고 또한 매우 창의적이다.`,      chunks:['She','is','smart','and','also','very','creative.'] },
+  { id:79, cat:'conj',    en:`We waited until the rain stopped.`,              ko:`우리는 비가 그칠 때까지 기다렸다.`,          chunks:['We','waited','until','the','rain','stopped.'] },
+  { id:80, cat:'conj',    en:`Although he was tired he kept studying.`,        ko:`그는 피곤했지만 계속 공부했다.`,             chunks:['Although','he','was','tired','he','kept','studying.'] },
+
+  // ===== 전치사/장소·시간 (81~90) =====
+  { id:81, cat:'prep',    en:`The cat is hiding under the table.`,             ko:`고양이가 탁자 아래에 숨어 있다.`,            chunks:['The','cat','is','hiding','under','the','table.'] },
+  { id:82, cat:'prep',    en:`I was born in the year 2013.`,                   ko:`나는 2013년에 태어났다.`,                    chunks:['I','was','born','in','the','year','2013.'] },
+  { id:83, cat:'prep',    en:`The store is between the bank and the post office.`, ko:`그 가게는 은행과 우체국 사이에 있다.`,   chunks:['The','store','is','between','the','bank','and','the','post','office.'] },
+  { id:84, cat:'prep',    en:`We meet at the school gate every morning.`,      ko:`우리는 매일 아침 학교 정문에서 만난다.`,     chunks:['We','meet','at','the','school','gate','every','morning.'] },
+  { id:85, cat:'prep',    en:`She put the book on the desk.`,                  ko:`그녀는 책을 책상 위에 놓았다.`,              chunks:['She','put','the','book','on','the','desk.'] },
+  { id:86, cat:'prep',    en:`My family goes to church on Sundays.`,           ko:`나의 가족은 일요일마다 교회에 간다.`,        chunks:['My','family','goes','to','church','on','Sundays.'] },
+  { id:87, cat:'prep',    en:`He arrived at the station before me.`,           ko:`그는 나보다 먼저 역에 도착했다.`,            chunks:['He','arrived','at','the','station','before','me.'] },
+  { id:88, cat:'prep',    en:`The library is next to the gym.`,                ko:`도서관은 체육관 옆에 있다.`,                 chunks:['The','library','is','next','to','the','gym.'] },
+  { id:89, cat:'prep',    en:`We will meet again in the afternoon.`,           ko:`우리는 오후에 다시 만날 것이다.`,            chunks:['We','will','meet','again','in','the','afternoon.'] },
+  { id:90, cat:'prep',    en:`She sat in front of me during the show.`,        ko:`그녀는 공연 중에 내 앞에 앉았다.`,           chunks:['She','sat','in','front','of','me','during','the','show.'] },
+
+  // ===== 감각·감정·생각 (91~100) =====
+  { id:91, cat:'feeling', en:`I feel nervous before every exam.`,              ko:`나는 시험마다 긴장된다.`,                    chunks:['I','feel','nervous','before','every','exam.'] },
+  { id:92, cat:'feeling', en:`She looks happy when she dances.`,               ko:`그녀는 춤을 출 때 행복해 보인다.`,           chunks:['She','looks','happy','when','she','dances.'] },
+  { id:93, cat:'feeling', en:`I think teamwork is very important.`,            ko:`나는 팀워크가 매우 중요하다고 생각한다.`,    chunks:['I','think','teamwork','is','very','important.'] },
+  { id:94, cat:'feeling', en:`He seemed surprised by the news.`,               ko:`그는 그 소식에 놀란 것 같았다.`,             chunks:['He','seemed','surprised','by','the','news.'] },
+  { id:95, cat:'feeling', en:`I believe that honesty is the best policy.`,     ko:`나는 정직이 최선이라고 믿는다.`,             chunks:['I','believe','that','honesty','is','the','best','policy.'] },
+  { id:96, cat:'feeling', en:`She smells the flowers in the garden.`,          ko:`그녀는 정원의 꽃 향기를 맡는다.`,            chunks:['She','smells','the','flowers','in','the','garden.'] },
+  { id:97, cat:'feeling', en:`I feel proud when I help someone.`,              ko:`나는 누군가를 도울 때 뿌듯함을 느낀다.`,    chunks:['I','feel','proud','when','I','help','someone.'] },
+  { id:98, cat:'feeling', en:`He sounds excited about the trip.`,              ko:`그는 여행에 대해 신나 보인다.`,              chunks:['He','sounds','excited','about','the','trip.'] },
+  { id:99, cat:'feeling', en:`We all hope for a peaceful world.`,              ko:`우리 모두는 평화로운 세상을 바란다.`,        chunks:['We','all','hope','for','a','peaceful','world.'] },
+  { id:100,cat:'feeling', en:`I am glad that I have good friends around me.`,  ko:`나는 주변에 좋은 친구들이 있어서 기쁘다.`,  chunks:['I','am','glad','that','I','have','good','friends','around','me.'] },
+
+  // ===== 고등 수준 고급 구문 (101~200) =====
+
+  { id:101, cat:'adv_to', en:`It is important to think critically before making a decision.`, ko:`결정을 내리기 전에 비판적으로 생각하는 것이 중요하다.`, chunks:['It','is','important','to','think','critically','before','making','a','decision.'] },
+  { id:102, cat:'adv_to', en:`She decided to pursue a career in medicine despite the challenges.`, ko:`그녀는 어려움에도 불구하고 의학 분야의 직업을 추구하기로 결심했다.`, chunks:['She','decided','to','pursue','a','career','in','medicine','despite','the','challenges.'] },
+  { id:103, cat:'adv_to', en:`He seems to have forgotten everything we discussed.`, ko:`그는 우리가 논의한 모든 것을 잊어버린 것 같다.`, chunks:['He','seems','to','have','forgotten','everything','we','discussed.'] },
+  { id:104, cat:'adv_to', en:`To master a language, one must practice it consistently.`, ko:`언어를 완전히 익히려면 꾸준히 연습해야 한다.`, chunks:['To','master','a','language,','one','must','practice','it','consistently.'] },
+  { id:105, cat:'adv_to', en:`I was surprised to find him still working at midnight.`, ko:`나는 그가 자정에도 여전히 일하고 있는 것을 발견하고 놀랐다.`, chunks:['I','was','surprised','to','find','him','still','working','at','midnight.'] },
+  { id:106, cat:'adv_to', en:`The plan is too complicated to be carried out in one day.`, ko:`그 계획은 너무 복잡해서 하루 만에 실행할 수 없다.`, chunks:['The','plan','is','too','complicated','to','be','carried','out','in','one','day.'] },
+  { id:107, cat:'adv_to', en:`She is known to be one of the most brilliant scientists of her time.`, ko:`그녀는 당대 가장 뛰어난 과학자 중 한 명으로 알려져 있다.`, chunks:['She','is','known','to','be','one','of','the','most','brilliant','scientists','of','her','time.'] },
+  { id:108, cat:'adv_to', en:`To be honest, I did not fully understand the lecture.`, ko:`솔직히 말하면, 나는 강의를 완전히 이해하지 못했다.`, chunks:['To','be','honest,','I','did','not','fully','understand','the','lecture.'] },
+  { id:109, cat:'adv_to', en:`He worked overtime in order to meet the deadline.`, ko:`그는 마감 기한을 맞추기 위해 초과 근무를 했다.`, chunks:['He','worked','overtime','in','order','to','meet','the','deadline.'] },
+  { id:110, cat:'adv_to', en:`It was foolish of her to trust someone she barely knew.`, ko:`그녀가 거의 알지 못하는 사람을 신뢰한 것은 어리석은 일이었다.`, chunks:['It','was','foolish','of','her','to','trust','someone','she','barely','knew.'] },
+  { id:111, cat:'adv_ger', en:`Avoiding difficult problems only makes them worse in the long run.`, ko:`어려운 문제를 피하는 것은 장기적으로 상황을 더 악화시킬 뿐이다.`, chunks:['Avoiding','difficult','problems','only','makes','them','worse','in','the','long','run.'] },
+  { id:112, cat:'adv_ger', en:`She is proud of having won the national competition.`, ko:`그녀는 전국 대회에서 우승한 것을 자랑스러워한다.`, chunks:['She','is','proud','of','having','won','the','national','competition.'] },
+  { id:113, cat:'adv_ger', en:`I remember seeing that film when I was in middle school.`, ko:`나는 중학교 때 그 영화를 봤던 것을 기억한다.`, chunks:['I','remember','seeing','that','film','when','I','was','in','middle','school.'] },
+  { id:114, cat:'adv_ger', en:`He denied having taken the money from the drawer.`, ko:`그는 서랍에서 돈을 가져간 것을 부인했다.`, chunks:['He','denied','having','taken','the','money','from','the','drawer.'] },
+  { id:115, cat:'adv_ger', en:`Reading widely is the best way to expand your vocabulary.`, ko:`폭넓게 읽는 것이 어휘를 늘리는 최선의 방법이다.`, chunks:['Reading','widely','is','the','best','way','to','expand','your','vocabulary.'] },
+  { id:116, cat:'adv_ger', en:`There is no point in worrying about things you cannot control.`, ko:`통제할 수 없는 일에 대해 걱정하는 것은 의미가 없다.`, chunks:['There','is','no','point','in','worrying','about','things','you','cannot','control.'] },
+  { id:117, cat:'adv_ger', en:`She regrets not studying harder during her school years.`, ko:`그녀는 학창 시절에 더 열심히 공부하지 않은 것을 후회한다.`, chunks:['She','regrets','not','studying','harder','during','her','school','years.'] },
+  { id:118, cat:'adv_ger', en:`Being well-prepared is half the battle in any endeavor.`, ko:`충분히 준비되어 있는 것이 어떤 도전에서든 절반의 성공이다.`, chunks:['Being','well-prepared','is','half','the','battle','in','any','endeavor.'] },
+  { id:119, cat:'adv_ger', en:`He insisted on attending the meeting in person.`, ko:`그는 직접 회의에 참석하겠다고 고집했다.`, chunks:['He','insisted','on','attending','the','meeting','in','person.'] },
+  { id:120, cat:'adv_ger', en:`I look forward to hearing your feedback on my project.`, ko:`나는 내 프로젝트에 대한 당신의 피드백을 듣기를 기대한다.`, chunks:['I','look','forward','to','hearing','your','feedback','on','my','project.'] },
+  { id:121, cat:'adv_part', en:`Exhausted from the long journey, she fell asleep immediately.`, ko:`긴 여행으로 지쳐서 그녀는 즉시 잠들었다.`, chunks:['Exhausted','from','the','long','journey,','she','fell','asleep','immediately.'] },
+  { id:122, cat:'adv_part', en:`The book written by that author has won several awards.`, ko:`그 작가가 쓴 책은 여러 상을 받았다.`, chunks:['The','book','written','by','that','author','has','won','several','awards.'] },
+  { id:123, cat:'adv_part', en:`Strictly speaking, the experiment did not prove the hypothesis.`, ko:`엄밀히 말하면, 그 실험은 가설을 증명하지 못했다.`, chunks:['Strictly','speaking,','the','experiment','did','not','prove','the','hypothesis.'] },
+  { id:124, cat:'adv_part', en:`The students taking the advanced course are highly motivated.`, ko:`심화 과정을 수강하는 학생들은 의욕이 매우 높다.`, chunks:['The','students','taking','the','advanced','course','are','highly','motivated.'] },
+  { id:125, cat:'adv_part', en:`Having finished the report, he went for a walk to clear his mind.`, ko:`보고서를 끝낸 후, 그는 머리를 식히러 산책을 나갔다.`, chunks:['Having','finished','the','report,','he','went','for','a','walk','to','clear','his','mind.'] },
+  { id:126, cat:'adv_part', en:`She sat in the corner, reading a novel quietly.`, ko:`그녀는 구석에 앉아 조용히 소설을 읽고 있었다.`, chunks:['She','sat','in','the','corner,','reading','a','novel','quietly.'] },
+  { id:127, cat:'adv_part', en:`Surrounded by supportive friends, he recovered his confidence.`, ko:`지지해 주는 친구들에 둘러싸여 그는 자신감을 회복했다.`, chunks:['Surrounded','by','supportive','friends,','he','recovered','his','confidence.'] },
+  { id:128, cat:'adv_part', en:`Judging from his expression, he was clearly disappointed.`, ko:`그의 표정으로 판단하건대, 그는 분명히 실망한 것 같았다.`, chunks:['Judging','from','his','expression,','he','was','clearly','disappointed.'] },
+  { id:129, cat:'adv_part', en:`The issues raised in the report deserve careful consideration.`, ko:`보고서에서 제기된 문제들은 신중한 검토를 받을 만하다.`, chunks:['The','issues','raised','in','the','report','deserve','careful','consideration.'] },
+  { id:130, cat:'adv_part', en:`Not knowing what to say, she remained silent for a while.`, ko:`무슨 말을 해야 할지 몰라서 그녀는 잠시 침묵을 지켰다.`, chunks:['Not','knowing','what','to','say,','she','remained','silent','for','a','while.'] },
+  { id:131, cat:'adv_rel', en:`The professor whose research changed modern medicine passed away last year.`, ko:`현대 의학을 바꾼 연구를 한 그 교수는 작년에 별세했다.`, chunks:['The','professor','whose','research','changed','modern','medicine','passed','away','last','year.'] },
+  { id:132, cat:'adv_rel', en:`This is the city where the ancient civilization first began to flourish.`, ko:`이곳은 고대 문명이 처음으로 번성하기 시작한 도시이다.`, chunks:['This','is','the','city','where','the','ancient','civilization','first','began','to','flourish.'] },
+  { id:133, cat:'adv_rel', en:`What matters most is not how you start, but how you finish.`, ko:`가장 중요한 것은 어떻게 시작하느냐가 아니라 어떻게 마무리하느냐이다.`, chunks:['What','matters','most','is','not','how','you','start,','but','how','you','finish.'] },
+  { id:134, cat:'adv_rel', en:`The reason why he quit his job remains unknown to most of us.`, ko:`그가 직장을 그만둔 이유는 우리 대부분에게 여전히 알려져 있지 않다.`, chunks:['The','reason','why','he','quit','his','job','remains','unknown','to','most','of','us.'] },
+  { id:135, cat:'adv_rel', en:`She is the kind of person who never gives up, no matter what.`, ko:`그녀는 어떤 상황에서도 절대 포기하지 않는 유형의 사람이다.`, chunks:['She','is','the','kind','of','person','who','never','gives','up,','no','matter','what.'] },
+  { id:136, cat:'adv_rel', en:`The day when I first realized my passion for science was unforgettable.`, ko:`내가 과학에 대한 열정을 처음 깨달은 날은 잊을 수 없었다.`, chunks:['The','day','when','I','first','realized','my','passion','for','science','was','unforgettable.'] },
+  { id:137, cat:'adv_rel', en:`There are situations in which honesty can be difficult but is always necessary.`, ko:`정직이 어렵지만 항상 필요한 상황들이 있다.`, chunks:['There','are','situations','in','which','honesty','can','be','difficult','but','is','always','necessary.'] },
+  { id:138, cat:'adv_rel', en:`He recommended a book, which turned out to be incredibly useful.`, ko:`그는 책 한 권을 추천해 줬는데, 그것은 믿을 수 없을 만큼 유용했다.`, chunks:['He','recommended','a','book,','which','turned','out','to','be','incredibly','useful.'] },
+  { id:139, cat:'adv_rel', en:`Whatever you decide, make sure it aligns with your values.`, ko:`무엇을 결정하든, 그것이 당신의 가치관과 일치하는지 확인해라.`, chunks:['Whatever','you','decide,','make','sure','it','aligns','with','your','values.'] },
+  { id:140, cat:'adv_rel', en:`The bridge that was built over a century ago is still in use today.`, ko:`한 세기 이상 전에 건설된 그 다리는 오늘날에도 여전히 사용되고 있다.`, chunks:['The','bridge','that','was','built','over','a','century','ago','is','still','in','use','today.'] },
+  { id:141, cat:'adv_cond', en:`If I had studied harder, I would have passed the exam with ease.`, ko:`내가 더 열심히 공부했더라면 시험을 쉽게 통과했을 것이다.`, chunks:['If','I','had','studied','harder,','I','would','have','passed','the','exam','with','ease.'] },
+  { id:142, cat:'adv_cond', en:`Were I in your position, I would handle the situation differently.`, ko:`내가 당신의 입장이라면 그 상황을 다르게 처리할 것이다.`, chunks:['Were','I','in','your','position,','I','would','handle','the','situation','differently.'] },
+  { id:143, cat:'adv_cond', en:`She wishes she had taken the opportunity when it was offered.`, ko:`그녀는 기회가 주어졌을 때 그것을 잡았더라면 하고 바란다.`, chunks:['She','wishes','she','had','taken','the','opportunity','when','it','was','offered.'] },
+  { id:144, cat:'adv_cond', en:`If it were not for your support, I could not continue this work.`, ko:`당신의 지원이 없다면 나는 이 일을 계속할 수 없을 것이다.`, chunks:['If','it','were','not','for','your','support,','I','could','not','continue','this','work.'] },
+  { id:145, cat:'adv_cond', en:`Had he arrived earlier, he would have met the guest in person.`, ko:`그가 더 일찍 도착했더라면 그 손님을 직접 만났을 것이다.`, chunks:['Had','he','arrived','earlier,','he','would','have','met','the','guest','in','person.'] },
+  { id:146, cat:'adv_cond', en:`I would travel the world if I had unlimited time and resources.`, ko:`내가 무한한 시간과 자원이 있다면 세계를 여행할 텐데.`, chunks:['I','would','travel','the','world','if','I','had','unlimited','time','and','resources.'] },
+  { id:147, cat:'adv_cond', en:`She talks as if she had experienced everything firsthand.`, ko:`그녀는 마치 모든 것을 직접 경험한 것처럼 말한다.`, chunks:['She','talks','as','if','she','had','experienced','everything','firsthand.'] },
+  { id:148, cat:'adv_cond', en:`Without his timely advice, the project would have ended in failure.`, ko:`그의 시기적절한 조언이 없었다면 그 프로젝트는 실패로 끝났을 것이다.`, chunks:['Without','his','timely','advice,','the','project','would','have','ended','in','failure.'] },
+  { id:149, cat:'adv_cond', en:`If only I could turn back time and make a different choice.`, ko:`시간을 되돌려 다른 선택을 할 수 있다면 얼마나 좋을까.`, chunks:['If','only','I','could','turn','back','time','and','make','a','different','choice.'] },
+  { id:150, cat:'adv_cond', en:`Suppose you were stranded on an island alone — what would you do first?`, ko:`당신이 혼자 섬에 고립되었다고 가정하면 — 가장 먼저 무엇을 할 것인가?`, chunks:['Suppose','you','were','stranded','on','an','island','alone','—','what','would','you','do','first?'] },
+  { id:151, cat:'adv_pass', en:`The new policy was announced without any prior warning.`, ko:`새 정책은 아무런 사전 경고 없이 발표되었다.`, chunks:['The','new','policy','was','announced','without','any','prior','warning.'] },
+  { id:152, cat:'adv_pass', en:`The ancient ruins are believed to have been built over three thousand years ago.`, ko:`그 고대 유적은 3천 년 이상 전에 건설된 것으로 여겨진다.`, chunks:['The','ancient','ruins','are','believed','to','have','been','built','over','three','thousand','years','ago.'] },
+  { id:153, cat:'adv_pass', en:`She was made to stay after class to explain her behavior.`, ko:`그녀는 자신의 행동을 설명하기 위해 수업 후에 남도록 강요받았다.`, chunks:['She','was','made','to','stay','after','class','to','explain','her','behavior.'] },
+  { id:154, cat:'adv_pass', en:`I had my laptop repaired at the service center downtown.`, ko:`나는 시내 서비스 센터에서 노트북을 수리했다.`, chunks:['I','had','my','laptop','repaired','at','the','service','center','downtown.'] },
+  { id:155, cat:'adv_pass', en:`The criminal was seen leaving the building at around midnight.`, ko:`그 범인은 자정 무렵 건물을 떠나는 것이 목격되었다.`, chunks:['The','criminal','was','seen','leaving','the','building','at','around','midnight.'] },
+  { id:156, cat:'adv_pass', en:`The results of the study were published in an international journal.`, ko:`그 연구 결과는 국제 학술지에 게재되었다.`, chunks:['The','results','of','the','study','were','published','in','an','international','journal.'] },
+  { id:157, cat:'adv_pass', en:`She let her younger brother use her computer for the assignment.`, ko:`그녀는 남동생이 과제를 위해 자신의 컴퓨터를 사용하도록 허락했다.`, chunks:['She','let','her','younger','brother','use','her','computer','for','the','assignment.'] },
+  { id:158, cat:'adv_pass', en:`The painting is said to be worth millions of dollars.`, ko:`그 그림은 수백만 달러의 가치가 있다고 전해진다.`, chunks:['The','painting','is','said','to','be','worth','millions','of','dollars.'] },
+  { id:159, cat:'adv_pass', en:`He was heard singing a song in the hallway early in the morning.`, ko:`그는 이른 아침에 복도에서 노래하는 것이 들렸다.`, chunks:['He','was','heard','singing','a','song','in','the','hallway','early','in','the','morning.'] },
+  { id:160, cat:'adv_pass', en:`The project has been delayed due to unexpected technical difficulties.`, ko:`그 프로젝트는 예상치 못한 기술적 어려움으로 인해 지연되었다.`, chunks:['The','project','has','been','delayed','due','to','unexpected','technical','difficulties.'] },
+  { id:161, cat:'adv_comp', en:`The more you read, the broader your perspective becomes.`, ko:`많이 읽을수록 당신의 시각은 더 넓어진다.`, chunks:['The','more','you','read,','the','broader','your','perspective','becomes.'] },
+  { id:162, cat:'adv_comp', en:`No other subject is as demanding as advanced mathematics.`, ko:`어떤 과목도 고급 수학만큼 힘들지 않다.`, chunks:['No','other','subject','is','as','demanding','as','advanced','mathematics.'] },
+  { id:163, cat:'adv_comp', en:`He is by far the most dedicated athlete on the entire team.`, ko:`그는 팀 전체에서 단연코 가장 헌신적인 선수이다.`, chunks:['He','is','by','far','the','most','dedicated','athlete','on','the','entire','team.'] },
+  { id:164, cat:'adv_comp', en:`The situation turned out to be far more serious than expected.`, ko:`그 상황은 예상보다 훨씬 더 심각한 것으로 밝혀졌다.`, chunks:['The','situation','turned','out','to','be','far','more','serious','than','expected.'] },
+  { id:165, cat:'adv_comp', en:`She completed the task in half the time it took her colleague.`, ko:`그녀는 동료가 걸린 시간의 절반 만에 그 과제를 완수했다.`, chunks:['She','completed','the','task','in','half','the','time','it','took','her','colleague.'] },
+  { id:166, cat:'adv_comp', en:`The longer you delay the decision, the harder it becomes to act.`, ko:`결정을 오래 미룰수록 행동하기가 더 어려워진다.`, chunks:['The','longer','you','delay','the','decision,','the','harder','it','becomes','to','act.'] },
+  { id:167, cat:'adv_comp', en:`This documentary is no less informative than a university lecture.`, ko:`이 다큐멘터리는 대학 강의 못지않게 유익하다.`, chunks:['This','documentary','is','no','less','informative','than','a','university','lecture.'] },
+  { id:168, cat:'adv_comp', en:`Modern smartphones are much more powerful than the computers of the 1990s.`, ko:`현대의 스마트폰은 1990년대 컴퓨터보다 훨씬 더 강력하다.`, chunks:['Modern','smartphones','are','much','more','powerful','than','the','computers','of','the','1990s.'] },
+  { id:169, cat:'adv_emph', en:`It was his determination, not his talent, that brought him success.`, ko:`그를 성공으로 이끈 것은 재능이 아니라 그의 결단력이었다.`, chunks:['It','was','his','determination,','not','his','talent,','that','brought','him','success.'] },
+  { id:170, cat:'adv_emph', en:`Never have I witnessed such an extraordinary act of courage.`, ko:`나는 이토록 비범한 용기의 행동을 목격한 적이 결코 없다.`, chunks:['Never','have','I','witnessed','such','an','extraordinary','act','of','courage.'] },
+  { id:171, cat:'adv_emph', en:`Not until she graduated did she realize how much she had learned.`, ko:`졸업하고 나서야 비로소 그녀는 자신이 얼마나 많이 배웠는지 깨달았다.`, chunks:['Not','until','she','graduated','did','she','realize','how','much','she','had','learned.'] },
+  { id:172, cat:'adv_emph', en:`So complex was the problem that no one could solve it immediately.`, ko:`그 문제는 너무 복잡해서 아무도 즉시 해결할 수 없었다.`, chunks:['So','complex','was','the','problem','that','no','one','could','solve','it','immediately.'] },
+  { id:173, cat:'adv_emph', en:`Only by working together can we overcome the challenges ahead.`, ko:`함께 협력해야만 우리는 앞에 놓인 도전들을 극복할 수 있다.`, chunks:['Only','by','working','together','can','we','overcome','the','challenges','ahead.'] },
+  { id:174, cat:'adv_emph', en:`Little did he know that his life was about to change forever.`, ko:`그는 자신의 삶이 영원히 바뀌려 하고 있다는 것을 거의 알지 못했다.`, chunks:['Little','did','he','know','that','his','life','was','about','to','change','forever.'] },
+  { id:175, cat:'adv_emph', en:`It is the quality of thinking, not the quantity, that determines success.`, ko:`성공을 결정하는 것은 사고의 양이 아니라 질이다.`, chunks:['It','is','the','quality','of','thinking,','not','the','quantity,','that','determines','success.'] },
+  { id:176, cat:'adv_emph', en:`Rarely does one encounter such a perfect combination of skill and passion.`, ko:`이처럼 기술과 열정의 완벽한 조합을 만나는 것은 드문 일이다.`, chunks:['Rarely','does','one','encounter','such','a','perfect','combination','of','skill','and','passion.'] },
+  { id:177, cat:'adv_emph', en:`Under no circumstances should you share your personal information online.`, ko:`어떤 상황에서도 당신의 개인 정보를 온라인에 공유해서는 안 된다.`, chunks:['Under','no','circumstances','should','you','share','your','personal','information','online.'] },
+  { id:178, cat:'adv_emph', en:`Had the weather been better, we would have held the ceremony outdoors.`, ko:`날씨가 더 좋았다면 우리는 야외에서 행사를 열었을 것이다.`, chunks:['Had','the','weather','been','better,','we','would','have','held','the','ceremony','outdoors.'] },
+  { id:179, cat:'adv_noun', en:`What surprised everyone was how calmly she handled the crisis.`, ko:`모든 사람을 놀라게 한 것은 그녀가 그 위기를 얼마나 침착하게 처리했는지였다.`, chunks:['What','surprised','everyone','was','how','calmly','she','handled','the','crisis.'] },
+  { id:180, cat:'adv_noun', en:`I wonder whether the research findings will change current medical practices.`, ko:`나는 그 연구 결과가 현재의 의료 관행을 바꿀지 궁금하다.`, chunks:['I','wonder','whether','the','research','findings','will','change','current','medical','practices.'] },
+  { id:181, cat:'adv_noun', en:`The fact that he refused to apologize made the situation worse.`, ko:`그가 사과를 거부했다는 사실이 상황을 더 악화시켰다.`, chunks:['The','fact','that','he','refused','to','apologize','made','the','situation','worse.'] },
+  { id:182, cat:'adv_noun', en:`No one knows for certain what the future holds for humanity.`, ko:`미래가 인류에게 무엇을 가져다 줄지 아무도 확실히 알지 못한다.`, chunks:['No','one','knows','for','certain','what','the','future','holds','for','humanity.'] },
+  { id:183, cat:'adv_noun', en:`It is clear that education plays a vital role in shaping society.`, ko:`교육이 사회를 형성하는 데 중요한 역할을 한다는 것은 분명하다.`, chunks:['It','is','clear','that','education','plays','a','vital','role','in','shaping','society.'] },
+  { id:184, cat:'adv_noun', en:`She asked me how long I had been studying for the entrance exam.`, ko:`그녀는 내가 입학 시험을 위해 얼마나 오래 공부해 왔는지 물었다.`, chunks:['She','asked','me','how','long','I','had','been','studying','for','the','entrance','exam.'] },
+  { id:185, cat:'adv_noun', en:`The question is not whether we can do it, but whether we should.`, ko:`문제는 우리가 그것을 할 수 있느냐가 아니라 해야 하느냐이다.`, chunks:['The','question','is','not','whether','we','can','do','it,','but','whether','we','should.'] },
+  { id:186, cat:'adv_noun', en:`That he managed to finish the project on time was truly remarkable.`, ko:`그가 제때 프로젝트를 끝냈다는 것은 정말 놀라운 일이었다.`, chunks:['That','he','managed','to','finish','the','project','on','time','was','truly','remarkable.'] },
+  { id:187, cat:'adv_conj', en:`Although the evidence was limited, the conclusion seemed reasonable.`, ko:`증거가 제한적이었지만 결론은 합리적으로 보였다.`, chunks:['Although','the','evidence','was','limited,','the','conclusion','seemed','reasonable.'] },
+  { id:188, cat:'adv_conj', en:`As long as you stay focused, you will achieve what you set out to do.`, ko:`집중력을 유지하는 한, 당신은 목표한 것을 달성할 것이다.`, chunks:['As','long','as','you','stay','focused,','you','will','achieve','what','you','set','out','to','do.'] },
+  { id:189, cat:'adv_conj', en:`She reviewed the document carefully so that no errors would be overlooked.`, ko:`그녀는 오류가 간과되지 않도록 문서를 꼼꼼히 검토했다.`, chunks:['She','reviewed','the','document','carefully','so','that','no','errors','would','be','overlooked.'] },
+  { id:190, cat:'adv_conj', en:`Even if the task seems overwhelming, breaking it into steps makes it manageable.`, ko:`과제가 압도적으로 느껴지더라도 단계로 나누면 다룰 수 있게 된다.`, chunks:['Even','if','the','task','seems','overwhelming,','breaking','it','into','steps','makes','it','manageable.'] },
+  { id:191, cat:'adv_conj', en:`Unless we take immediate action, the environmental damage will be irreversible.`, ko:`즉각적인 조치를 취하지 않으면 환경 피해는 되돌릴 수 없을 것이다.`, chunks:['Unless','we','take','immediate','action,','the','environmental','damage','will','be','irreversible.'] },
+  { id:192, cat:'adv_conj', en:`Now that the exams are over, we can finally take a well-deserved break.`, ko:`이제 시험이 끝났으니 마침내 충분히 쉴 수 있다.`, chunks:['Now','that','the','exams','are','over,','we','can','finally','take','a','well-deserved','break.'] },
+  { id:193, cat:'adv_conj', en:`Provided that you meet all the requirements, the scholarship will be granted.`, ko:`모든 요건을 충족한다면 장학금이 지급될 것이다.`, chunks:['Provided','that','you','meet','all','the','requirements,','the','scholarship','will','be','granted.'] },
+  { id:194, cat:'adv_conj', en:`In spite of facing numerous setbacks, he never lost sight of his goal.`, ko:`수많은 좌절에 직면했음에도 불구하고 그는 목표를 결코 잃지 않았다.`, chunks:['In','spite','of','facing','numerous','setbacks,','he','never','lost','sight','of','his','goal.'] },
+  { id:195, cat:'adv_essay', en:`The rapid advancement of artificial intelligence raises serious ethical questions that society must address.`, ko:`인공지능의 급격한 발전은 사회가 반드시 다루어야 할 심각한 윤리적 문제들을 제기한다.`, chunks:['The','rapid','advancement','of','artificial','intelligence','raises','serious','ethical','questions','that','society','must','address.'] },
+  { id:196, cat:'adv_essay', en:`It cannot be denied that social media has fundamentally altered the way people communicate.`, ko:`소셜 미디어가 사람들이 소통하는 방식을 근본적으로 변화시켰다는 것은 부인할 수 없다.`, chunks:['It','cannot','be','denied','that','social','media','has','fundamentally','altered','the','way','people','communicate.'] },
+  { id:197, cat:'adv_essay', en:`One of the most pressing challenges of our time is bridging the gap between the rich and the poor.`, ko:`우리 시대의 가장 시급한 과제 중 하나는 빈부 격차를 해소하는 것이다.`, chunks:['One','of','the','most','pressing','challenges','of','our','time','is','bridging','the','gap','between','the','rich','and','the','poor.'] },
+  { id:198, cat:'adv_essay', en:`What distinguishes a great leader is not authority, but the ability to inspire others to act.`, ko:`위대한 지도자를 구별 짓는 것은 권위가 아니라 다른 사람들이 행동하도록 고무하는 능력이다.`, chunks:['What','distinguishes','a','great','leader','is','not','authority,','but','the','ability','to','inspire','others','to','act.'] },
+  { id:199, cat:'adv_essay', en:`The extent to which technology improves our lives depends largely on how wisely we choose to use it.`, ko:`기술이 우리의 삶을 향상시키는 정도는 우리가 그것을 얼마나 현명하게 사용하기로 선택하느냐에 크게 달려 있다.`, chunks:['The','extent','to','which','technology','improves','our','lives','depends','largely','on','how','wisely','we','choose','to','use','it.'] },
+  { id:200, cat:'adv_essay', en:`Unless individuals, governments, and corporations work in concert, the goal of a sustainable future will remain out of reach.`, ko:`개인, 정부, 기업이 협력하지 않는 한, 지속 가능한 미래라는 목표는 여전히 실현 불가능한 상태로 남을 것이다.`, chunks:['Unless','individuals,','governments,','and','corporations','work','in','concert,','the','goal','of','a','sustainable','future','will','remain','out','of','reach.'] },
+
+];
+
+
+// ===== 청크 한글 뜻 사전 =====
+const CHUNK_KO = {
+  'I':'나','We':'우리','She':'그녀','He':'그','They':'그들','It':'그것',
+  'My':'나의','My mom':'나의 엄마','My dog':'나의 개','My bag':'내 가방','My family':'나의 가족',
+  'The sky':'하늘','The classroom':'교실','The cat':'고양이','The store':'그 가게',
+  'The library':'도서관','The book':'그 책','The movie':'이 영화','This book':'이 책',
+  'This':'이것','Summer':'여름','Math':'수학','English':'영어','January':'1월',
+  'A cheetah':'치타','A cheetah runs faster':'치타는 더 빠르게 달린다',
+  'am':'이다','is':'이다','are':'이다','was':'이었다','were':'이었다',
+  'am happy':'행복하다','is hiding':'숨어 있다','is hotter':'더 덥다','is easier':'더 쉽다',
+  'is going to visit':'방문할 예정이다','is going to learn':'배울 예정이다',
+  'is going to plant':'심을 예정이다','is smart':'똑똑하다','is heavier':'더 무겁다',
+  'is very important':'매우 중요하다',
+  'go to school':'학교에 가다','goes':'간다','went':'갔다','went on':'갔다',
+  'reads books':'책을 읽다','read':'읽다','reads':'읽다',
+  'plays soccer':'축구를 하다','play':'하다','played games':'게임을 했다',
+  'played':'했다','played basketball':'농구를 했다',
+  'eat lunch':'점심을 먹다','eat':'먹다','eats':'먹다','ate pizza':'피자를 먹었다','ate':'먹었다',
+  'cooks':'요리한다','cook':'요리하다',
+  'study English':'영어를 공부하다','study':'공부하다','studied hard':'열심히 공부했다','studied':'공부했다',
+  'wake up':'일어나다','likes':'좋아하다','like':'좋아하다','like summer':'여름을 좋아하다',
+  'drinks':'마신다','drink':'마시다','will study hard':'열심히 공부할 것이다',
+  'will have':'열 것이다','will make':'만들 것이다','will meet again':'다시 만날 것이다',
+  'will become':'될 것이다','will play basketball':'농구를 할 것이다',
+  'will be sunny':'맑을 것이다','will help you':'도와줄게','will improve':'늘 것이다',
+  'clean':'청소하다','visited':'방문했다','watched':'봤다','finished':'끝냈다',
+  'rained a lot':'비가 많이 왔다','ran fast':'빠르게 달렸다','won':'이겼다',
+  'wrote':'썼다','saw':'봤다','put':'놓았다','sat':'앉았다','arrived':'도착했다',
+  'meet':'만나다','smells':'맡는다','sounds excited':'신나 보인다','feel nervous':'긴장된다',
+  'feel proud':'뿌듯함을 느끼다','feels':'느끼다','feel':'느끼다',
+  'looks happy':'행복해 보인다','seemed surprised':'놀란 것 같았다',
+  'believe':'믿는다','think':'생각하다','I think':'나는 생각한다','waited':'기다렸다',
+  'hope':'바라다','We all':'우리 모두','We all hope':'우리 모두 바란다',
+  'am glad':'기쁘다','can speak':'할 수 있다','can play':'칠 수 있다',
+  'can run faster':'더 빠르게 달릴 수 있다','can go':'갈 수 있다','can swim':'수영할 수 있다',
+  'could not come':'올 수 없었다','must follow':'따라야 한다','must finish':'끝내야 한다',
+  'must not talk':'말하면 안 된다','should brush':'닦아야 한다','should eat':'먹어야 한다',
+  'should be kind':'친절해야 한다','Can you':'할 수 있니','Can you help me':'도와줄 수 있니',
+  'am going to read':'읽을 예정이다','are going to plant':'심을 예정이다',
+  'are going to visit':'방문할 예정이다',
+  'a student':'학생','a movie':'영화','a letter':'편지','a rainbow':'무지개',
+  'a field trip':'현장 학습','a birthday cake':'생일 케이크','a scientist':'과학자',
+  'a doctor':'의사','a glass of milk':'우유 한 잔','a good grade':'좋은 성적',
+  'a peaceful world':'평화로운 세상','a horse':'말',
+  'my grandparents':'조부모님','my best friends':'가장 친한 친구들',
+  'my favorite subject':'내가 가장 좋아하는 과목','my favorite teacher?':'가장 좋아하는 선생님?',
+  'my grandparents':'조부모님','my homework':'나의 숙제','my brother':'남동생',
+  'his homework':'그의 숙제','her friend':'그녀의 친구',
+  'your teeth':'이를','your favorite teacher?':'가장 좋아하는 선생님?',
+  'the piano':'피아노','the report':'보고서','the school rules':'학교 규칙',
+  'the race':'경주','the rain':'비','the flowers':'꽃','the news':'소식',
+  'the table':'탁자','the bank':'은행','the school gate':'학교 정문',
+  'the book':'책','the desk':'책상','the station':'역','the gym':'체육관',
+  'the tallest student':'가장 키 큰 학생','the best player':'가장 훌륭한 선수',
+  'the most beautiful park':'가장 아름다운 공원','the coldest month':'가장 추운 달',
+  'the last one':'지난 것','the park':'공원',
+  'by bus':'버스로','by Friday':'금요일까지',
+  'in her free time':'여가 시간에','in the morning':'아침에','in the afternoon':'오후에',
+  'in our class':'우리 반에서','in the city':'도시에서','in the garden':'정원에서',
+  'in the ocean?':'바다에서?','in the year 2013.':'2013년에.',
+  'in front of me':'내 앞에','in the future?':'미래에?',
+  'after school':'방과 후에','after the rain':'비가 온 후에',
+  'at noon':'정오에','at seven':'7시에','at the school gate':'학교 정문에서',
+  'at the station':'역에','at the park':'공원에서',
+  'on Fridays':'금요일마다','on Sundays':'일요일마다','on the desk':'책상 위에',
+  'on the team':'팀에서','on a field trip':'현장 학습으로',
+  'to school':'학교에','to church':'교회에','to each other':'서로에게',
+  'to draw pictures':'그림 그리는 것을','to see you':'너를 만나서',
+  'to her friend':'친구에게','to get there?':'거기까지?',
+  'to swim':'수영하는 법','to be a doctor.':'의사가 되다.',
+  'to Jeju Island?':'제주도에?',
+  'for the exam':'시험을 위해','for the test':'시험을 위해',
+  'for lunch':'점심으로','for him':'그를 위해','for a peaceful world':'평화로운 세상을',
+  'for school?':'학교에?',
+  'for the test.':'시험을 위해.','for a peaceful world.':'평화로운 세상을.',
+  'before dinner':'저녁 식사 전에','before me':'나보다 먼저',
+  'before every exam':'시험마다','before every exam.':'시험마다.',
+  'under the table':'탁자 아래에','under the table.':'탁자 아래에.',
+  'between the bank':'은행 사이에','and the post office.':'그리고 우체국.',
+  'next to the gym.':'체육관 옆에.','next to the gym':'체육관 옆에',
+  'during the show':'공연 중에','during the show.':'공연 중에.',
+  'during the test':'시험 중에','during the test.':'시험 중에.',
+  'every day':'매일','every morning':'매일 아침',
+  'every day,':'매일,','every day.':'매일.',
+  'last weekend':'지난 주말','last weekend.':'지난 주말.',
+  'last summer?':'지난 여름에?','last Monday':'지난 월요일에',
+  'last night':'어젯밤에','last night.':'어젯밤에.',
+  'yesterday':'어제','yesterday.':'어제.',
+  'together':'함께','together.':'함께.',
+  'soon':'곧','soon.':'곧.','someday':'언젠가','someday.':'언젠가.',
+  'tomorrow':'내일','tomorrow.':'내일.',
+  'again':'다시','again.':'다시.',
+  'hard':'열심히','fast':'빠르게','well':'잘','well.':'잘.',
+  'tall':'키가 크다','cute.':'귀엽다.','quiet.':'조용하다.',
+  'helpful.':'도움이 된다.','helpful':'도움이 되는',
+  'very kind':'매우 친절한','very well':'매우 잘','very creative':'매우 창의적인',
+  'very important':'매우 중요한','very important.':'매우 중요한.',
+  'and helpful.':'그리고 도움이 된다.',
+  'and cute.':'그리고 귀엽다.','and quiet.':'그리고 조용하다.',
+  'and also':'또한','and also very creative.':'또한 매우 창의적이다.',
+  'and Korean.':'그리고 한국어.','and won':'그리고 이겼다',
+  'and the post office.':'그리고 우체국.','and the race.':'그리고 경주.',
+  'so':'그래서','so she got':'그래서 그녀는 받았다',
+  'because':'왜냐하면','because he was sick.':'아파서.',
+  'when she dances.':'춤을 출 때.','when I help':'내가 도울 때',
+  'when I help someone.':'내가 도울 때.','When I grow up':'내가 크면',
+  'when she dances':'춤을 출 때',
+  'although':'비록','Although':'비록','if':'만약','If':'만약',
+  'until':'까지','until the rain stopped.':'비가 그칠 때까지.',
+  'you ask me.':'네가 부탁하면.','you practice every day':'매일 연습하면',
+  'you will improve.':'실력이 늘 것이다.',
+  'he was sick.':'아파서.','he kept studying.':'계속 공부했다.',
+  'he was tired':'피곤했지만',
+  'it was cold':'추웠지만','it was cold,':'추웠지만,',
+  'Seoul':'서울','Seoul.':'서울.','Fridays.':'금요일마다.',
+  'Sundays.':'일요일마다.','Monday.':'월요일.','Monday':'월요일',
+  'three books':'책 세 권','this month.':'이번 달에.',
+  'this month':'이번 달에','this spring.':'이번 봄에.',
+  'this spring':'이번 봄에','this problem?':'이 문제를?',
+  'two times a day':'하루에 두 번','twice a day.':'하루에 두 번.',
+  'twice a day':'하루에 두 번',
+  'What':'무엇','Where':'어디','How often':'얼마나 자주',
+  'How long':'얼마나 걸리나','Why':'왜','Who':'누구',
+  'Do you have':'있니','Have you ever been':'가본 적 있니',
+  'What time':'몇 시에','do you want to be':'되고 싶니',
+  'do you':'하니','exercise?':'운동하니?','open?':'열리니?',
+  'you go':'갔니','you go,':'갔니,',
+  'does the library':'도서관이','are you late':'늦었니',
+  'does it take':'걸리나','to get there?':'거기까지?',
+  'any brothers':'형제가','or sisters?':'또는 자매가?',
+  'I want to be':'되고 싶다','I can go':'갈 수 있다',
+  'I believe':'나는 믿는다','I want to be a doctor.':'의사가 되고 싶다.',
+  'I am glad':'나는 기쁘다','that I have':'내가 갖고 있어서',
+  'that honesty':'정직이','that honesty is':'정직이라고',
+  'is the best policy.':'최선이라고.','is very important.':'매우 중요하다.',
+  'good friends around me.':'주변에 좋은 친구들이.',
+  'by the news.':'그 소식에.','about the trip.':'여행에 대해.',
+  'more interesting':'더 흥미로운','more exciting':'더 신나는',
+  'more vegetables.':'더 많은 채소.','more vegetables':'더 많은 채소',
+  'than that one.':'저것보다.','than spring.':'봄보다.','than yours.':'네 것보다.',
+  'than I thought.':'내가 생각했던 것보다.','than a horse.':'말보다.',
+  'than my brother.':'남동생보다.',
+  'than the last one.':'지난 것보다.','of the year.':'한 해 중.',
+  'swimming.':'수영을.','swimming':'수영을',
+  'someone.':'누군가를.','someone':'누군가를',
+  'trees':'나무를','trees.':'나무를.',
+  'English':'영어','Korean.':'한국어.','Korean':'한국어',
+  'vegetables.':'채소를.',
+  'I kept studying.':'계속 공부했다.',
+  'he kept studying.':'계속 공부했다.',
+  'we went outside.':'밖에 나갔다.','we went outside':'밖에 나갔다',
+  'I want to be a doctor.':'의사가 되고 싶다.',
+};
+
+
+function getChunkKo(text) {
+  if(CHUNK_KO[text]) return CHUNK_KO[text];
+  // 없으면 단어별로 분해해서 합치기 시도
+  const words = text.replace(/[.,?!]$/,'').split(' ');
+  const parts = words.map(w=>CHUNK_KO[w]||'');
+  if(parts.some(p=>p)) return parts.join(' ').trim();
+  return '';
+}
+
+// ===== CONSTANTS =====
+const PCAT_LABEL = {be:'🟢 be동사',present:'🟢 현재형',past:'🟡 과거형',future:'🟠 미래형',question:'🔴 의문문',modal:'🟣 조동사',compare:'🔵 비교급',conj:'🟢 접속사',prep:'🟡 전치사',feeling:'🔴 감정표현',adv_to:'📌 to부정사',adv_ger:'📌 동명사',adv_part:'📌 분사',adv_rel:'📌 관계사',adv_cond:'📌 가정법',adv_pass:'📌 수동태',adv_comp:'📌 비교구문',adv_emph:'📌 강조/도치',adv_noun:'📌 명사절',adv_conj:'📌 접속사',adv_essay:'📌 논술구문'};
+const CHUNK_COLORS = ['cc-0','cc-1','cc-2','cc-3','cc-4'];
+const PARTICLES = ['⭐','🌟','💫','❤️','🎉','✨','🎈','🌈','💖','🎊'];
+
+// ===== STATE =====
+let stats     = JSON.parse(localStorage.getItem('eg_stats')||'{"ws":{},"tg":0,"tc":0,"tw":0}');
+let childName = localStorage.getItem('eg_name')||'';
+let curGameCat = 'all', usedIds = [];
+let curPhraseCat = 'all';
+let curSentence = null, placed = {}, dragged = null;
+let sesOk=0, sesNg=0, sesSn=0;
+if(!stats.ws) stats.ws={};
+
+// ===== INIT =====
+function bootApp() {
+  renderPhraseList();
+  initRankSystem();  // 항상 NPC 랭킹 초기화
+  if(childName) {
+    document.getElementById('welcomeModal').style.display='none';
+    document.getElementById('topChild').style.display='flex';
+    document.getElementById('topChildName').textContent=childName;
+    document.getElementById('statsName').textContent=childName;
+  }
+}
+if(document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootApp);
+} else {
+  bootApp();
+}
+
+// ===== TTS =====
+let ttsVoice=null;
+(function initTTS(){
+  if(!window.speechSynthesis) return;
+  const load=()=>{
+    const v=speechSynthesis.getVoices();
+    ttsVoice=v.find(x=>x.lang.startsWith('en-')&&!x.name.includes('Google'))
+            ||v.find(x=>x.lang.startsWith('en'))||null;
+  };
+  load(); speechSynthesis.onvoiceschanged=load;
+})();
+function speakText(txt){
+  if(!window.speechSynthesis||!txt) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(txt);
+  u.lang='en-US'; u.rate=0.85; u.pitch=1.05;
+  if(ttsVoice) u.voice=ttsVoice;
+  speechSynthesis.speak(u);
+}
+
+// ===== WELCOME =====
+function startGame(){
+  const n=document.getElementById('childNameInput').value.trim()||'친구';
+  childName=n; localStorage.setItem('eg_name',n);
+  document.getElementById('welcomeModal').style.display='none';
+  document.getElementById('topChild').style.display='flex';
+  document.getElementById('topChildName').textContent=n;
+  document.getElementById('statsName').textContent=n;
+  initRankSystem();
+}
+function changeName(){
+  const n=prompt('이름:',childName);
+  if(n?.trim()){childName=n.trim();localStorage.setItem('eg_name',childName);document.getElementById('topChildName').textContent=childName;document.getElementById('statsName').textContent=childName;}
+}
+
+// ===== TAB =====
+function showTab(t){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+t).classList.add('active');
+  document.getElementById('tab-'+t).classList.add('active');
+  if(t==='stats') renderStats();
+  if(t==='game') {
+    setTimeout(()=>{
+      if(rankPlayers.length === 0) initRankSystem();
+      else renderLiveRank();
+    }, 50);
+  }
+}
+
+// ===== PHRASES PAGE =====
+function filterPhrase(el,cat){
+  curPhraseCat=cat;
+  document.querySelectorAll('#phraseFilter .cat-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderPhraseList();
+}
+function renderPhraseList(){
+  const list=curPhraseCat==='all'?PHRASES:curPhraseCat==='advanced'?PHRASES.filter(p=>p.cat.startsWith('adv_')):PHRASES.filter(p=>p.cat===curPhraseCat);
+  document.getElementById('phraseCnt').textContent=list.length+'개';
+  document.getElementById('phraseList').innerHTML=list.map(p=>`
+    <div class="phrase-item" onclick="speakText('${p.en.replace(/'/g,"\\'")}')">
+      <div class="phrase-num">${p.id}</div>
+      <div style="flex:1">
+        <div class="phrase-en">${p.en} <span style="font-size:12px;opacity:.45">🔊</span></div>
+        <div class="phrase-ko">${p.ko}</div>
+        <span class="phrase-tag">${PCAT_LABEL[p.cat]||p.cat}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ===== STATS =====
+function saveStats(){ localStorage.setItem('eg_stats',JSON.stringify(stats)); }
+function renderStats(){
+  document.getElementById('statsName').textContent=childName||'학습자';
+  const done=Object.keys(stats.ws).filter(k=>stats.ws[k].correct>0).length;
+  document.getElementById('st1').textContent=PHRASES.length;
+  document.getElementById('st2').textContent=done;
+  document.getElementById('st3').textContent=stats.tg||0;
+  document.getElementById('st4').textContent=stats.tc||0;
+  const sorted=PHRASES.map(p=>{const w=stats.ws[p.id]||{correct:0,seen:0};return{...p,...w};})
+    .filter(p=>p.seen>0).sort((a,b)=>b.seen-a.seen).slice(0,10);
+  const rl=document.getElementById('rankList');
+  if(!sorted.length){rl.innerHTML='<div style="text-align:center;padding:20px;color:#888;font-size:13px;font-weight:700">게임을 시작해보세요! 🎮</div>';return;}
+  rl.innerHTML=sorted.map((p,i)=>`
+    <div class="rank-row">
+      <div class="rank-badge ${i<3?'r'+(i+1):'rN'}">${i+1}</div>
+      <div class="rank-word">
+        <div class="rank-en">${p.en}</div>
+        <div class="rank-ko">${p.ko}</div>
+      </div>
+      <div class="rank-cnt">✅ ${p.correct}회</div>
+    </div>`).join('');
+}
+function resetStats(){stats={ws:{},tg:0,tc:0,tw:0};sesOk=sesNg=sesSn=0;['scOk','scSn','scNg'].forEach(id=>document.getElementById(id).textContent=0);saveStats();renderStats();alert('초기화 완료!');}
+
+// ===== GAME CAT =====
+function selectGameCat(el,cat){
+  curGameCat=cat; usedIds=[];
+  document.querySelectorAll('#gameCatFilter .cat-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ===== PICK PHRASE =====
+function pickPhrase(){
+  const pool=curGameCat==='all'?PHRASES:curGameCat==='advanced'?PHRASES.filter(p=>p.cat.startsWith('adv_')):PHRASES.filter(p=>p.cat===curGameCat);
+  if(!pool.length) return null;
+  let cands=pool.filter(p=>!usedIds.includes(p.id));
+  if(!cands.length){usedIds=[];cands=pool;}
+  const p=cands[Math.floor(Math.random()*cands.length)];
+  usedIds.push(p.id);
+  return p;
+}
+
+// ===== LOAD SENTENCE =====
+function loadSentence(){
+  clearGame();
+  const phrase=pickPhrase();
+  if(!phrase){alert('출제할 구문이 없어요!');return;}
+  if(!stats.ws[phrase.id]) stats.ws[phrase.id]={correct:0,seen:0};
+  stats.ws[phrase.id].seen++;
+  stats.tg++; sesSn++;
+  document.getElementById('scSn').textContent=sesSn;
+  saveStats();
+  curSentence={id:phrase.id, en:phrase.en, ko:phrase.ko, chunks:phrase.chunks};
+  renderGame();
+}
+
+
+
+// ===== RENDER GAME =====
+function renderGame(){
+  if(!curSentence) return;
+  placed={};
+  document.getElementById('koTranslation').style.display='none';
+  document.getElementById('curPhraseKo').textContent=curSentence.ko;
+  document.getElementById('phraseNumBadge').textContent=`#${curSentence.id} / 100`;
+
+  // Chunk bank (섞기, 색상 원래 순서 기억)
+  const wb=document.getElementById('wordBankArea');
+  wb.innerHTML='';
+
+  const shuffled=[...curSentence.chunks].map((c,i)=>({text:c,origIdx:i})).sort(()=>Math.random()-.5);
+  shuffled.forEach(({text,origIdx})=>{
+    const ko=getChunkKo(text);
+    const b=document.createElement('div');
+    b.className=`chunk-block ${CHUNK_COLORS[origIdx%CHUNK_COLORS.length]}`;
+    b.dataset.chunk=text; b.dataset.origIdx=origIdx;
+    b.draggable=true;
+    b.innerHTML=`<span class="chunk-en">${text}</span>${ko?`<span class="chunk-ko">${ko}</span>`:''}`;
+    b.addEventListener('click',()=>{ if(!b.classList.contains('placed')) speakText(text); });
+    addDrag(b); wb.appendChild(b);
+  });
+
+  // Drop zone
+  const dz=document.getElementById('dropZoneArea');
+  dz.innerHTML='';
+  curSentence.chunks.forEach((c,i)=>{
+    const s=document.createElement('div');
+    s.className='drop-slot'; s.id=`sl-${i}`;
+    s.dataset.index=i; s.dataset.expected=c; s.dataset.origIdx=i;
+    s.textContent=(i+1)+'번'; addDrop(s); dz.appendChild(s);
+  });
+
+  updateProg();
+  document.getElementById('hintBox').style.display='none';
+}
+
+// ===== DROP HANDLER =====
+function handleDrop(slot,blockEl){
+  if(blockEl.dataset.chunk===slot.dataset.expected){
+    const origIdx=parseInt(blockEl.dataset.origIdx);
+    const ko=getChunkKo(blockEl.dataset.chunk);
+    slot.innerHTML='';
+    const pb=document.createElement('div');
+    pb.className=`placed-chunk ${CHUNK_COLORS[origIdx%CHUNK_COLORS.length]}`;
+    pb.innerHTML=`<span class="chunk-en">${blockEl.dataset.chunk}</span>${ko?`<span class="chunk-ko">${ko}</span>`:''}`;
+    slot.appendChild(pb);
+    slot.classList.add('correct','c-pop');
+    blockEl.classList.add('placed');
+    placed[slot.dataset.index]=true;
+    if(!stats.ws[curSentence.id]) stats.ws[curSentence.id]={correct:0,seen:0};
+    stats.ws[curSentence.id].correct++;
+    stats.tc++; sesOk++;
+    document.getElementById('scOk').textContent=sesOk;
+    speakText(blockEl.dataset.chunk);
+    addMyScore(10);
+    saveStats(); spawnP(slot);
+    checkWin();
+  } else {
+    stats.tw++; sesNg++;
+    document.getElementById('scNg').textContent=sesNg;
+    saveStats();
+    slot.classList.add('wrong');
+    showWrongMsg();
+    setTimeout(()=>slot.classList.remove('wrong'),500);
+  }
+  updateProg();
+}
+
+function checkWin(){
+  if(Object.keys(placed).length===curSentence.chunks.length){
+    // 영어 문장 + 한글 해석 모두 표시
+    document.getElementById('koTranslationText').innerHTML=
+      `<div style="font-size:19px;font-weight:900;color:#1E40AF;margin-bottom:6px">${curSentence.en}</div>`+
+      `<div style="font-size:17px;font-weight:800;color:#059669">🇰🇷 ${curSentence.ko}</div>`;
+    document.getElementById('koTranslation').style.display='block';
+    setTimeout(()=>speakText(curSentence.en), 300);
+    addMyScore(30); // 문장 완성 보너스
+    setTimeout(showSuccess, 1100);
+  }
+}
+
+function showSuccess(){
+  spawnMass();
+  const emojis=['⭐','🌟','✨','🎉','🏆','🎊','🥳','🌈','💫','🦋'];
+  const titles=['완벽해요! 🎉','대단해요! 🌟','최고예요! 🏆','훌륭해요! ✨'];
+  document.getElementById('sChar').textContent=emojis[Math.floor(Math.random()*emojis.length)];
+  document.getElementById('sTitle').textContent=titles[Math.floor(Math.random()*titles.length)];
+  document.getElementById('sSub').textContent=`${curSentence.en}\n\n🇰🇷 ${curSentence.ko}\n\n${childName||'친구'}가 멋지게 완성했어요! 🌟`;
+  document.getElementById('successModal').classList.add('show');
+}
+function nextGame(){ document.getElementById('successModal').classList.remove('show'); loadSentence(); }
+
+// ===== DRAG & DROP =====
+function addDrag(el){
+  el.addEventListener('dragstart',e=>{dragged=el;el.classList.add('dragging');e.dataTransfer.setData('text/plain',el.dataset.chunk);});
+  el.addEventListener('dragend',()=>{el.classList.remove('dragging');dragged=null;});
+  el.addEventListener('touchstart',tStart,{passive:false});
+  el.addEventListener('touchmove',tMove,{passive:false});
+  el.addEventListener('touchend',tEnd);
+}
+function addDrop(slot){
+  slot.addEventListener('dragover',e=>{e.preventDefault();if(!slot.classList.contains('correct'))slot.classList.add('drag-over-slot');});
+  slot.addEventListener('dragleave',()=>slot.classList.remove('drag-over-slot'));
+  slot.addEventListener('drop',e=>{e.preventDefault();slot.classList.remove('drag-over-slot');if(!slot.classList.contains('correct')&&dragged)handleDrop(slot,dragged);});
+}
+document.getElementById('dropZoneArea').addEventListener('dragover',e=>e.preventDefault());
+
+let tEl=null,tClone=null,tDragging=false;
+function tStart(e){
+  tEl=e.currentTarget;
+  if(tEl.classList.contains('placed'))return;
+  e.preventDefault(); // 스크롤 즉시 차단
+  tDragging=false;
+  const t=e.touches[0];
+  tClone=tEl.cloneNode(true);
+  tClone.style.cssText=`position:fixed;opacity:.85;z-index:9999;pointer-events:none;transform:scale(1.1);left:${t.clientX-60}px;top:${t.clientY-30}px;transition:none`;
+  document.body.appendChild(tClone);
+  dragged=tEl;
+}
+function tMove(e){
+  if(!tClone)return;
+  e.preventDefault(); // 드래그 중 스크롤 완전 차단
+  tDragging=true;
+  const t=e.touches[0];
+  tClone.style.left=(t.clientX-60)+'px';
+  tClone.style.top=(t.clientY-30)+'px';
+  // 드롭존 호버 하이라이트
+  document.querySelectorAll('.drop-slot').forEach(s=>s.classList.remove('drag-over-slot'));
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  const slot=el?.closest('.drop-slot');
+  if(slot&&!slot.classList.contains('correct')) slot.classList.add('drag-over-slot');
+}
+function tEnd(e){
+  if(!tClone||!tEl)return;
+  e.preventDefault();
+  document.querySelectorAll('.drop-slot').forEach(s=>s.classList.remove('drag-over-slot'));
+  const t=e.changedTouches[0];
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  tClone.remove(); tClone=null;
+  const slot=el?.closest('.drop-slot');
+  if(slot&&!slot.classList.contains('correct')&&dragged) handleDrop(slot,dragged);
+  dragged=null; tEl=null; tDragging=false;
+}
+
+// ===== HELPERS =====
+function showHint(){
+  if(!curSentence) return;
+  const hb=document.getElementById('hintBox');
+  hb.innerHTML=`💡 총 <b>${curSentence.chunks.length}개</b> 블럭 | 첫 번째: <b>"${curSentence.chunks[0]}"</b>`;
+  hb.style.display='block';
+}
+function resetDZ(){ if(curSentence){placed={};renderGame();} }
+function clearGame(){
+  placed={};
+  document.getElementById('koTranslation').style.display='none';
+  document.getElementById('curPhraseKo').textContent='';
+  document.getElementById('phraseNumBadge').textContent='';
+  document.getElementById('wordBankArea').innerHTML='<span style="color:#CCC;font-size:13px;font-weight:700">새 문장을 눌러주세요</span>';
+  document.getElementById('dropZoneArea').innerHTML='<div style="color:#CCC;font-size:13px;font-weight:700">블럭을 드래그 ⬇️</div>';
+  document.getElementById('hintBox').style.display='none';
+  document.getElementById('progFill').style.width='0%';
+  document.getElementById('progText').textContent='';
+}
+function updateProg(){
+  if(!curSentence) return;
+  const tot=curSentence.chunks.length, done=Object.keys(placed).length;
+  const pct=Math.round(done/tot*100);
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progText').textContent=`${done} / ${tot} (${pct}%)`;
+}
+function spawnP(el){
+  const r=el.getBoundingClientRect();
+  for(let i=0;i<5;i++){
+    const p=document.createElement('div');p.className='particle';
+    p.textContent=PARTICLES[Math.floor(Math.random()*PARTICLES.length)];
+    p.style.left=(r.left+r.width/2+(Math.random()-.5)*60)+'px';
+    p.style.top=(r.top+r.height/2)+'px';
+    p.style.fontSize=(14+Math.random()*16)+'px';
+    p.style.animationDelay=(Math.random()*.3)+'s';
+    document.body.appendChild(p);setTimeout(()=>p.remove(),2200);
+  }
+}
+function spawnMass(){
+  for(let i=0;i<35;i++)setTimeout(()=>{
+    const p=document.createElement('div');p.className='particle';
+    p.textContent=PARTICLES[Math.floor(Math.random()*PARTICLES.length)];
+    p.style.left=(Math.random()*window.innerWidth)+'px';
+    p.style.top=(Math.random()*window.innerHeight*.7+window.innerHeight*.3)+'px';
+    p.style.fontSize=(18+Math.random()*24)+'px';
+    document.body.appendChild(p);setTimeout(()=>p.remove(),2200);
+  },i*60);
+}
+function showWrongMsg(){
+  const msgs=['다시 해봐요! 💪','조금만 더! 🤔','틀렸어요! ❌','한번 더! 🔄'];
+  const old=document.querySelector('.wrong-msg');if(old)old.remove();
+  const m=document.createElement('div');m.className='wrong-msg';
+  m.textContent=msgs[Math.floor(Math.random()*msgs.length)];
+  document.body.appendChild(m);setTimeout(()=>m.remove(),2400);
+}
+
+// ===== 🏆 LIVE RANK SYSTEM =====
+const RIVAL_NAMES = ['지훈🤖','서연🤖','민준🤖','하은🤖','준서🤖','수아🤖','태양🤖','예린🤖','강민🤖'];
+const RIVAL_AVATARS = ['🦊','🐯','🐻','🦋','🐬','🌟','🦁','🌈','🎯'];
+const RIVAL_COLORS = ['#FF6B9D','#FF9F1C','#9B5DE5','#06D6A0','#4F7EF7','#FFD166','#FF6B6B','#06D6A0','#9B5DE5'];
+
+let rankPlayers = [];     // [{name, avatar, color, score, isMe}]
+let rankHistory = [];     // 나의 순위 기록
+let rankAutoTimer = null;
+let prevMyRank = null;
+
+function initRankSystem() {
+  const myName = childName || '나';
+  // 경쟁자 랜덤 초기 점수 (50~300 사이)
+  rankPlayers = RIVAL_NAMES.map((name, i) => ({
+    name, avatar: RIVAL_AVATARS[i], color: RIVAL_COLORS[i],
+    score: Math.floor(Math.random() * 250) + 50,
+    isMe: false,
+    prevRank: null,
+  }));
+  // 나 추가
+  rankPlayers.push({ name: myName, avatar: '🙋', color: '#4F7EF7', score: 0, isMe: true, prevRank: null });
+  rankHistory = [];
+  startRankAutoUpdate();
+  renderLiveRank();
+}
+
+function getMyRankIdx() {
+  const sorted = [...rankPlayers].sort((a,b) => b.score - a.score);
+  return sorted.findIndex(p => p.isMe) + 1;
+}
+
+function addMyScore(pts) {
+  const me = rankPlayers.find(p => p.isMe);
+  if (!me) return;
+  const oldRank = getMyRankIdx();
+  me.score += pts;
+  const newRank = getMyRankIdx();
+  rankHistory.push(newRank);
+  if (rankHistory.length > 12) rankHistory.shift();
+  if (newRank < oldRank) showRankToast(newRank, oldRank);
+  renderLiveRank(oldRank);
+  renderRankHistory();
+}
+
+function startRankAutoUpdate() {
+  if (rankAutoTimer) clearInterval(rankAutoTimer);
+  rankAutoTimer = setInterval(() => {
+    // 랜덤 경쟁자 1~3명 점수 변동
+    const rivals = rankPlayers.filter(p => !p.isMe);
+    const count = Math.floor(Math.random() * 3) + 1;
+    const prevMyRankBefore = getMyRankIdx();
+    rivals.sort(() => Math.random() - 0.5).slice(0, count).forEach(r => {
+      const delta = Math.floor(Math.random() * 30) - 8; // -8 ~ +22
+      r.score = Math.max(0, r.score + delta);
+    });
+    const prevMyRankAfter = getMyRankIdx();
+    if (prevMyRankAfter < prevMyRankBefore) showRankToast(prevMyRankAfter, prevMyRankBefore);
+    renderLiveRank(prevMyRankBefore);
+  }, 3500);
+}
+
+function renderLiveRank(prevMyRank) {
+  const board = document.getElementById('liveRankBoard');
+  if (!board) { setTimeout(()=>renderLiveRank(prevMyRank), 100); return; }
+  if (rankPlayers.length === 0) { initRankSystem(); return; }
+  const sorted = [...rankPlayers].sort((a,b) => b.score - a.score);
+  const maxScore = Math.max(...sorted.map(s => s.score), 1);
+  const myRank = sorted.findIndex(p => p.isMe) + 1;
+
+  board.innerHTML = sorted.map((p, i) => {
+    const rank = i + 1;
+    const posClass = rank === 1 ? 'p1' : rank === 2 ? 'p2' : rank === 3 ? 'p3' : p.isMe ? 'pMe' : 'pN';
+    const posText = rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank;
+    const barW = Math.round((p.score / maxScore) * 100);
+    const barColor = p.isMe ? '#4F7EF7' : p.color;
+
+    // 델타 계산
+    let deltaHtml = '<span class="rank-delta same">—</span>';
+    if (prevMyRank && p.isMe) {
+      const diff = prevMyRank - rank; // 양수 = 올라감
+      if (diff > 0) deltaHtml = `<span class="rank-delta up">▲${diff}</span>`;
+      else if (diff < 0) deltaHtml = `<span class="rank-delta down">▼${Math.abs(diff)}</span>`;
+    }
+
+    return `<div class="rank-live-row ${p.isMe ? 'is-me' : ''}" id="rankrow-${p.name}">
+      ${p.isMe ? '<div class="rank-crown">👑</div>' : ''}
+      <div class="rank-pos ${posClass}">${posText}</div>
+      <div class="rank-avatar">${p.avatar}</div>
+      <div class="rank-info">
+        <div class="rank-name">${p.name}${p.isMe ? ' 👈' : ''}</div>
+        <div class="rank-score-bar-wrap">
+          <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${barW}%;background:${barColor}"></div></div>
+          <div class="rank-score-num">${p.score}pt</div>
+        </div>
+      </div>
+      ${deltaHtml}
+    </div>`;
+  }).join('');
+}
+
+function renderRankHistory() {
+  const el = document.getElementById('rankHistoryChart');
+  const lb = document.getElementById('rankHistoryLabel');
+  if (!el || rankHistory.length === 0) return;
+  const min = Math.min(...rankHistory);
+  const max = Math.max(...rankHistory);
+  const myRank = rankHistory[rankHistory.length - 1];
+
+  el.innerHTML = rankHistory.map((r, i) => {
+    const heightPct = Math.max(10, Math.round(((10 - r) / 9) * 100));
+    const isBest = r === min, isWorst = r === max && r !== min;
+    const isLast = i === rankHistory.length - 1;
+    return `<div class="rh-bar ${isBest ? 'best' : isWorst ? 'worst' : ''}"
+      style="height:${heightPct}%;${isLast ? 'outline:2px solid var(--primary);outline-offset:1px' : ''}">
+    </div>`;
+  }).join('');
+
+  lb.textContent = `현재 ${myRank}위`;
+}
+
+function showRankToast(newRank, oldRank) {
+  const old = document.querySelector('.rank-toast');
+  if (old) old.remove();
+  const t = document.createElement('div');
+  t.className = 'rank-toast';
+  t.textContent = `🎉 NPC 랭킹 ${oldRank}위 → ${newRank}위 상승!`;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+
+</script>
+</body>
+</html>
